@@ -3,7 +3,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-    //Taki komentarz.
+    //Ustawiamy tytuł okna
     setWindowTitle(QString::fromUtf8("Generator drzew 3D według L-systemów"));
 }
 
