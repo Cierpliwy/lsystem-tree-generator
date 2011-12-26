@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QPlainTextEdit>
+#include <QSyntaxHighlighter>
 #include <cstdio>
 
 //Deklaracja z wyprzedzeniem.
@@ -78,6 +79,32 @@ protected:
 
 private:
     ScriptEditor *editor;
+};
+
+//Klasa kolorująca składnię skryptu L-systemów
+class LSystemScriptHighlighter : public QSyntaxHighlighter {
+
+    Q_OBJECT
+
+public:
+
+    //Konstruktor
+    LSystemScriptHighlighter(QTextDocument *document);
+
+protected:
+
+    //Funkcja definiująca podświetlanie składni
+    void highlightBlock(const QString &text);
+
+private:
+
+    //Funkcja sprawdza czy znak jest białym znakiem lub '{','}',',',';',':','='
+    bool isIgnoredChar(QChar c);
+
+    //Formaty dla typów danych w składni Lsystemu
+    QTextCharFormat keywordFormat;
+    QTextCharFormat stringFormat;
+    QTextCharFormat charFormat;
 };
 
 #endif // SCRIPTEDITOR_H

@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Tworzymy edytor
     editor = new ScriptEditor(this);
+    //Tworzymy jego podświetlenie składni.
+    editorHighlighter = new LSystemScriptHighlighter(editor->document());
 
     //Ustawiamy pasek stanu edytora
     editorStatusBar = new QLabel;
@@ -60,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() {
-    
+    delete editorHighlighter;
 }
 
 //Parsujemy zawartość okna

@@ -10,7 +10,7 @@ ScriptEditor::ScriptEditor(QWidget *parent) :
     QPlainTextEdit(parent) {
 
     // Ustawienia podstawowe edytora.
-    QFont editorFont("Monospace");
+    QFont editorFont("Monospace",11);
     editorFont.setStyleHint(QFont::TypeWriter);
     setFont(editorFont);
     setTabStopWidth(20);
@@ -169,3 +169,76 @@ void ScriptEditor::keyPressEvent(QKeyEvent * event) {
     if( event->key() != Qt::Key_BraceLeft && event->key() != Qt::Key_Tab )
         tabUsed = false;
 }
+
+//Konstruktor klasy kolorującej składnie skryptu do L-systemów. Przekazujemy
+//dokument do rodzica.
+LSystemScriptHighlighter::LSystemScriptHighlighter(QTextDocument *document)
+    : QSyntaxHighlighter(document) {
+
+    //Jasny niebieski i pogrubiony dla słów kluczowych.
+    keywordFormat.setForeground(QColor(22, 104, 135));
+    keywordFormat.setFontUnderline(true);
+
+    //Ciemny niebieski dla napisów.
+    stringFormat.setForeground(QColor(15, 70, 91));
+    stringFormat.setFontWeight(QFont::Bold);
+
+    //Ciemny zielony dla znaków.
+    charFormat.setForeground(QColor(12, 95, 38));
+
+}
+
+//Sprawdzamy czy aktualnie jest znak który ignorujemy
+bool LSystemScriptHighlighter::isIgnoredChar(QChar c) {
+    if( c.isSpace() || c == '{' || c == '}' || c == ';' ||
+        c == ':' || c == ',' || c == '=') return true;
+    return false;
+}
+
+//Właściwa funkcja kolorująca składnie skryptu L-systemów.
+void LSystemScriptHighlighter::highlightBlock(const QString &text) {
+
+    //Co aktualnie przeglądamy
+    enum State {
+        NONE,
+        CHAR,
+        STRING
+    } state = NONE;
+
+    //Pozycja początkowa dla formatowania.
+    int startPos = 0;
+    for(int i = 0; i <= text.length(); ++i)
+    {
+        switch(state) {
+        //Narazie nic nie mamy.
+        case NONE:
+            //Jeżeli natrafiliśmy na biały znak lub znaki specjalne nic nie rób.
+            if( i == text.length() || isIgnoredChar(text.at(i)) ) break;
+            startPos = i;
+            state = CHAR;
+            break;
+        //Mamy jeden znak
+        case CHAR:
+            if( i == text.length() || isIgnoredChar(text.at(i)) ) {
+                setFormat(startPos, i-startPos, charFormat);
+                state = NONE;
+                break;
+            }
+            state = STRING;
+            break;
+        //Mamy ciąg znaków
+        case STRING:
+            if( i == text.length() || isIgnoredChar(text.at(i)) ) {
+                QString tmp = text.mid(startPos,i-startPos);
+                if( tmp == "alphabet" || tmp == "axiom" ||
+                    tmp == "rules" || tmp == "define" )
+                    setFormat(startPos,i-startPos,keywordFormat);
+                else
+                    setFormat(startPos,i-startPos,stringFormat);
+                state = NONE;
+            }
+            break;
+        }
+    }
+}
+

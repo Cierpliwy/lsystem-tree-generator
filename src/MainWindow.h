@@ -7,7 +7,9 @@ class ScriptEditor;
 class QPushButton;
 class QPlainTextEdit;
 class QLabel;
+
 class Parser;
+class LSystemScriptHighlighter;
 
 class MainWindow : public QWidget
 {
@@ -26,11 +28,15 @@ public slots:
     void editorCursorChanged();
 
 private:
+
     ScriptEditor *editor;
     QPushButton *parseButton;
     QPlainTextEdit *errorContainer;
     QLabel *editorStatusBar;
     Parser *parser;
+
+    //Klasa podświetlająca składnię dla edytora
+    LSystemScriptHighlighter* editorHighlighter;
 };
 
 #endif // MAINWINDOW_H
