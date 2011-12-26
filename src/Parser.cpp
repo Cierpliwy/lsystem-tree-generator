@@ -176,7 +176,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
 
             if( tmpString.length() == 1 && isprint(tmpString.at(0)) && tmpString.at(0) != ':' &&
-                tmpString.at(0) != '{' && tmpString.at(0) != '}' && tmpString.at(0) != ',' ) {
+                tmpString.at(0) != '{' && tmpString.at(0) != '}' && tmpString.at(0) != ',' && tmpString.at(0) != '=' ) {
                 if( alphabet_.insert(tmpString.at(0)).second == false ) {
                     getErrorPosition();
                     stringstream ss;
@@ -267,8 +267,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             ruleSet = false;
             tmpPosition = skipUntilWhiteCharOr('=','\n');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
-            if( tmpString.length() == 1 && tmpString.at(0) != ':' && tmpString.at(0) != ';' &&
-                tmpString.at(0) != '{' && tmpString.at(0) != '}' && tmpString.at(0) != ',' ) {
+            if( tmpString.length() == 1 ) {
                 if( lsystem_->getRuleMap().find(tmpString.at(0)) == lsystem_->getRuleMap().end() ) {
                     //Sprawdzamy czy znak należy do alfabetu.
                     if( alphabet_.find(tmpString.at(0)) == alphabet_.end() ) {
