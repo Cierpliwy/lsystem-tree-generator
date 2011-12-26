@@ -13,8 +13,10 @@ TEMPLATE = app
 SOURCES += src/Parser.cpp \
     src/MainWindow.cpp \
     src/Main.cpp \
-    src/LSystem.cpp
+    src/LSystem.cpp \
+    src/ScriptEditor.cpp
 
 HEADERS  += src/Parser.h \
     src/MainWindow.h \
-    src/LSystem.h
+    src/LSystem.h \
+    src/ScriptEditor.h
