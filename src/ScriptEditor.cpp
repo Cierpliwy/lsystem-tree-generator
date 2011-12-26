@@ -9,6 +9,12 @@ using namespace std;
 ScriptEditor::ScriptEditor(QWidget *parent) :
     QPlainTextEdit(parent) {
 
+    // Ustawienia podstawowe edytora.
+    QFont editorFont("Monospace");
+    editorFont.setStyleHint(QFont::TypeWriter);
+    setFont(editorFont);
+    setTabStopWidth(20);
+
     // Tworzymy obiekt lewego marginesu.
     margin = new ScriptEditorMargin(this);
 

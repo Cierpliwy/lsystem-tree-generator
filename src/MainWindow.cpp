@@ -19,9 +19,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Tworzymy edytor
     editor = new ScriptEditor(this);
-    QFont editorFont("Monospace");
-    editorFont.setStyleHint(QFont::TypeWriter);
-    editor->setFont(editorFont);
 
     //Ustawiamy pasek stanu edytora
     editorStatusBar = new QLabel;
