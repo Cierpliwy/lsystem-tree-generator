@@ -50,6 +50,10 @@ private:
 
     //Lewy margines dla naszego edytora.
     ScriptEditorMargin *margin;
+    //Informacja o aktualnym poziomie wcięcia.
+    int tabLevel;
+    //Czy wcięcie ma być zatwierdzone.
+    bool tabUsed;
 };
 
 // Klasa, której zadaniem jest rysowanie lewego marginesu dla

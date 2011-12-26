@@ -14,6 +14,8 @@ ScriptEditor::ScriptEditor(QWidget *parent) :
     editorFont.setStyleHint(QFont::TypeWriter);
     setFont(editorFont);
     setTabStopWidth(20);
+    tabLevel = 0;
+    tabUsed = false;
 
     // Tworzymy obiekt lewego marginesu.
     margin = new ScriptEditorMargin(this);
@@ -123,8 +125,47 @@ void ScriptEditor::marginPaintEvent(QPaintEvent *event) {
         }
 }
 
-//Weentualne formatowanie tekstu.
+//Dodajemy możliwość generowania automatycznych wcięć.
+//Każde użycie { lub tab zwiększa poziom wcięcia, zaś
+//} lub backspace zmienijsza.
 void ScriptEditor::keyPressEvent(QKeyEvent * event) {
+
+    //Gdy użyty zostaje backspace cofamy wcięcia jedynie wtedy gdy
+    //ostatnim znakiem była tabulacja.
+    if( event->key() == Qt::Key_Backspace && tabLevel > 0) {
+        if( textCursor().positionInBlock() > 0 )
+            if( textCursor().block().text().at(textCursor().positionInBlock()-1) == '\t' )
+                tabLevel--;
+    }
+
+    //Wykonujemy funkcję klasy bazowej.
     QPlainTextEdit::keyPressEvent(event);
 
+    //Gdy występuje zamknięcie klamry i wcześniejszym znakiem była tabulacja
+    //zmniejszamy poziom wcięć.
+    if( event->key() == Qt::Key_BraceRight && tabLevel > 0 ) {
+        textCursor().deletePreviousChar();
+        if( textCursor().positionInBlock() > 0 &&
+            textCursor().block().text().at(textCursor().positionInBlock()-1) == '\t') {
+            textCursor().deletePreviousChar();
+            tabLevel--;
+        }
+        textCursor().insertText("}");
+    }
+
+    //Gdy używamy rozpoczęcia bloku lub tabulacji jest możliwość zwiększenia
+    //wcięcia (jeśli zaraz po tym naciśniemy ENTER).
+    if( event->key() == Qt::Key_BraceLeft || event->key() == Qt::Key_Tab )
+        tabUsed = true;
+
+    //Jeżeli został naciśnięty enter sprawdzamy poziom wcięć i odpowiednio je dodajemy.
+    if( event->key() == Qt::Key_Return ) {
+        if( tabUsed ) tabLevel++;
+        for(int i=0; i<tabLevel; ++i)
+            textCursor().insertText("\t");
+    }
+
+    //Jeżeli został obsłużony inny znak nie chcemy by nastąpiło wcięcie.
+    if( event->key() != Qt::Key_BraceLeft && event->key() != Qt::Key_Tab )
+        tabUsed = false;
 }
