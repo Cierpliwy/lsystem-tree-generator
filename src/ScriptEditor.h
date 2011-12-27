@@ -46,15 +46,20 @@ private slots:
     void updateMarginWidth(int newBlockCount);
     //Uaktualniamy obszar marginesu
     void updateMargin(const QRect& rect, int dy);
+    //Uaktualniamy informację potrzebne do generowania automatycznych
+    //wcięć.
+    void updateIndentationInfo();
 
 private:
 
     //Lewy margines dla naszego edytora.
     ScriptEditorMargin *margin;
-    //Informacja o aktualnym poziomie wcięcia.
-    int tabLevel;
-    //Czy wcięcie ma być zatwierdzone.
-    bool tabUsed;
+    //Informacja o aktualnym i poprzednim poziomie wcięcia.
+    int tabLevel, lastTabLevel;
+    //Informacja czy znakiem przed kursorem jest { i czy był {
+    bool afterLeftBrace, lastAfterLeftBrace;
+    //Czy kursor znajduje się tylko przed białymi znakami.
+    bool afterSpaceOnly, lastAfterSpaceOnly;
 };
 
 // Klasa, której zadaniem jest rysowanie lewego marginesu dla

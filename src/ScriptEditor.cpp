@@ -14,8 +14,14 @@ ScriptEditor::ScriptEditor(QWidget *parent) :
     editorFont.setStyleHint(QFont::TypeWriter);
     setFont(editorFont);
     setTabStopWidth(20);
+
+    // Zmienne pomocnicze do wyznaczania automatycznych wcięć.
     tabLevel = 0;
-    tabUsed = false;
+    lastTabLevel = 0;
+    afterLeftBrace = false;
+    lastAfterLeftBrace = false;
+    afterSpaceOnly = false;
+    lastAfterSpaceOnly = false;
 
     // Tworzymy obiekt lewego marginesu.
     margin = new ScriptEditorMargin(this);
@@ -24,6 +30,7 @@ ScriptEditor::ScriptEditor(QWidget *parent) :
     // bądz podświetleń.
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateMarginWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateMargin(QRect,int)));
+    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(updateIndentationInfo()));
 
     //Wyłączamy załamywanie linii.
     setWordWrapMode(QTextOption::NoWrap);
@@ -101,7 +108,7 @@ void ScriptEditor::highlightBlocks(const std::vector<int> &block_list) {
 // Funkcja rysująca margines.
 void ScriptEditor::marginPaintEvent(QPaintEvent *event) {
 
-    //Najpierw rysujemy cały margines na szaro.
+    //Najpierw rysujemy cały margines na niebiesko.
     QPainter painter(margin);
     painter.fillRect(event->rect(), QColor(22, 104, 135));
 
@@ -125,49 +132,68 @@ void ScriptEditor::marginPaintEvent(QPaintEvent *event) {
         }
 }
 
+//Zwracamy informację o aktualnych parametrach dotyczących linii:
+//Jaki jest poziom wcięć linii, czy przed kursorem jest znak {.
+void ScriptEditor::updateIndentationInfo() {
+
+    //Zapisujemy poprzedni stan.
+    lastTabLevel = tabLevel;
+    lastAfterLeftBrace = afterLeftBrace;
+    lastAfterSpaceOnly = afterSpaceOnly;
+
+    //Pobieramy akualną linię w której znajduje się kursor.
+    QString currentLine = textCursor().block().text();
+    //Zwracamy aktualną pozycję kursora.
+    int currentPos = textCursor().positionInBlock();
+
+    //Srawdzamy poziom wcięć
+    tabLevel = 0;
+    int i = 0;
+    for(; i < currentLine.length(); ++i) {
+        if( currentLine.at(i) != '\t') break;
+        else tabLevel++;
+    }
+
+    //Dodatkowe sprawdzanie czy przed kursorem są tylko białe znaki.
+    if( i == currentLine.length() ) afterSpaceOnly = true;
+    else afterSpaceOnly = false;
+
+    //Sprawdzamy czy jesteśmy przed '{'
+    afterLeftBrace = false;
+    for(int i = currentPos-1; i >= 0; --i) {
+        if( currentLine.at(i).isSpace()) continue;
+        if( currentLine.at(i) == '{') afterLeftBrace = true;
+        break;
+    }
+}
+
 //Dodajemy możliwość generowania automatycznych wcięć.
 //Każde użycie { lub tab zwiększa poziom wcięcia, zaś
 //} lub backspace zmienijsza.
 void ScriptEditor::keyPressEvent(QKeyEvent * event) {
 
-    //Gdy użyty zostaje backspace cofamy wcięcia jedynie wtedy gdy
-    //ostatnim znakiem była tabulacja.
-    if( event->key() == Qt::Key_Backspace && tabLevel > 0) {
-        if( textCursor().positionInBlock() > 0 )
-            if( textCursor().block().text().at(textCursor().positionInBlock()-1) == '\t' )
-                tabLevel--;
-    }
-
     //Wykonujemy funkcję klasy bazowej.
     QPlainTextEdit::keyPressEvent(event);
 
-    //Gdy występuje zamknięcie klamry i wcześniejszym znakiem była tabulacja
-    //zmniejszamy poziom wcięć.
-    if( event->key() == Qt::Key_BraceRight && tabLevel > 0 ) {
-        textCursor().deletePreviousChar();
-        if( textCursor().positionInBlock() > 0 &&
-            textCursor().block().text().at(textCursor().positionInBlock()-1) == '\t') {
-            textCursor().deletePreviousChar();
-            tabLevel--;
-        }
-        textCursor().insertText("}");
-    }
-
-    //Gdy używamy rozpoczęcia bloku lub tabulacji jest możliwość zwiększenia
-    //wcięcia (jeśli zaraz po tym naciśniemy ENTER).
-    if( event->key() == Qt::Key_BraceLeft || event->key() == Qt::Key_Tab )
-        tabUsed = true;
-
-    //Jeżeli został naciśnięty enter sprawdzamy poziom wcięć i odpowiednio je dodajemy.
+    //Jeżeli został naciśnięty klawisz Enter ustawiamy poziom wcięć taki
+    //jak w poprzedniej linii + o jeden poziom większy gdy wcześniej był znak
+    //'{'
     if( event->key() == Qt::Key_Return ) {
-        if( tabUsed ) tabLevel++;
-        for(int i=0; i<tabLevel; ++i)
+        if( lastAfterLeftBrace ) lastTabLevel++;
+        int tmpTabLevel = lastTabLevel;
+        for(int i=0; i<tmpTabLevel; ++i)
             textCursor().insertText("\t");
     }
 
-    //Jeżeli został obsłużony inny znak nie chcemy by nastąpiło wcięcie.
-    if( event->key() != Qt::Key_BraceLeft && event->key() != Qt::Key_Tab )
-        tabUsed = false;
+    //Jeżeli użytkownik uzył '}' i poziom wcięć jest większy od zera i
+    //kursor znajdował się tylko przed białymi znakami. Cofnij wcięcie.
+    if( event->key() == Qt::Key_BraceRight && lastTabLevel > 0 ) {
+        bool tmpAfterSpaceOnly = lastAfterSpaceOnly;
+        textCursor().deletePreviousChar();
+        if( tmpAfterSpaceOnly )
+            textCursor().deletePreviousChar();
+        textCursor().insertText("}");
+    }
 }
 
 //Konstruktor klasy kolorującej składnie skryptu do L-systemów. Przekazujemy
