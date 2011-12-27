@@ -19,7 +19,7 @@ const string& LSystem::generate(int recursion_depth) {
     //ustaw ostatnia wygenerowana glebokosc rekurencji
     int curr_depth = recursions_.size();
 
-    //jezeli wymagamy glebszej rekurencji
+    // Jezeli wymagamy glebszej rekurencji
     if(curr_depth <= recursion_depth ) {
         //jezeli wczesniej nie byla generowana zadna rekurencja, zwroc wyraz poczatkowy
         if (curr_depth == 0 && recursion_depth == 0) {
