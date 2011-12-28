@@ -70,7 +70,7 @@ private:
     //Zwraca pozycje bledu
     void getErrorPosition();
 
-    //Reporuje blad podczas parsowania
+    //Zgłasza blad podczas parsowania
     void reportError(const std::string &error_description);
   
     //Typ wyliczeniowy prezentujacy stany parsera.

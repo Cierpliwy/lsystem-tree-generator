@@ -45,7 +45,7 @@ std::size_t Parser::skipUntilWhiteCharOr(char stop_char, char stop_char2) const 
 }
 
 //Skacze za koniec aktualnego LSystemu.
-//Uwaga: pozycja znaku może się znaleźć za końcem aktualneg
+//Uwaga: pozycja znaku może się znaleźć za końcem aktualnego
 //ciągu.
 void Parser::jumpToEndOfLSystem() {
     for(;position_ < scriptString_->length(); ++position_)
@@ -88,7 +88,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
     state_ = LSYSTEM_NAME;
     //Czyscimy flage bledow
     errors_ = false;
-    //Tymczasowa pozycja do wyznaczenia
+    //Tymczasowa pozycja do wyznaczania
     string::size_type tmpPosition;
     //Tymczasowy string do przeanalizowania
     string tmpString;
@@ -102,8 +102,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
     parseErrors_.clear();
     //Czyścimy tablicę LSystemów
     lsystems_.clear();
-    //Czyścimy alfabet
-    alphabet_.clear();
 
     //Dopóki pozycja nie przekroczy pliku parsujemy LSystemy
     while( ignoreWhiteChars() ) {
@@ -116,6 +114,8 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             if( !lsystemFinished ) delete lsystem_;
             lsystem_ = new LSystem;
             lsystemFinished = false;
+            //Czyścimy alfabet
+            alphabet_.clear();
 
             //Sprawdzamy nazwe LSystemu
             tmpPosition = skipUntilWhiteCharOr('{','\n');
@@ -123,7 +123,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
 
             if( isLSystemName(tmpString) && tmpString.length() > 0) {
 
-                //Sprawdzamy czy nazwa nie wystapila w rzadnym z L-systemów.
+                //Sprawdzamy czy nazwa nie wystapila w zadnym z L-systemów.
                 vector<boost::shared_ptr<LSystem> >::const_iterator it = lsystems_.begin();
                 for(; it!=lsystems_.end(); ++it)
                     if( (*it)->getName().compare(tmpString) == 0 ) break;
@@ -324,7 +324,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                         ss << "W ciągu reguły '" << tmpString << "' występuje znak '" << tmpString.at(j) << "' który nie należy do alfabetu.";
                         reportError(ss.str());
                     }
-                } else reportError("Reguła została już zdefiniowana. Spodziewano się podania nowej reguły ',' bądź zakończenia ';'.");
+                } else reportError("Spodziewano się podania nowej reguły po znaku ',' bądź zakończenia ';'.");
             } else {
                 //Musimy sprawdzic na jakim znaku zatrzymal sie parser. Mógł zatrzymać się na za plikiem
                 //wtedy sprawdzenia może zawiesić program.
@@ -365,8 +365,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
 
             //Korygujemy pozycję
             if( position_ >= scriptString_->length() ) {
-                position_ = 0;
-                if( scriptString_->length() > 0 ) position_ = scriptString_->length();
+                position_ = scriptString_->length();
             }
 
             //Ustawiamy pozycję.
