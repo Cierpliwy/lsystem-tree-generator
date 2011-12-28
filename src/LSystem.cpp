@@ -1,5 +1,4 @@
 #include "LSystem.h"
-#include <iostream>
 using std::cout;
 using std::string;
 using std::vector;
@@ -13,7 +12,6 @@ LSystem::~LSystem(){
     //dtor
 }
 
-//TODO: usunąć std wyjście.
 //Generuje ciąg L-systemu dla podanej generacji.
 const string& LSystem::generate(int recursion_depth) {
     //ustaw ostatnia wygenerowana glebokosc rekurencji
@@ -35,18 +33,14 @@ const string& LSystem::generate(int recursion_depth) {
         for(int recursion = curr_depth; recursion <= recursion_depth; ++recursion ){
             string curr_recursion = recursions_.back();
             next_recursion = "";
-            cout << "rekurencja nr" << recursion << " wyglada: " << curr_recursion << std::endl;
             for(unsigned int i = 0; i < curr_recursion.size(); ++i){
                  it = rules_.find(curr_recursion[i]);
                  if(it != rules_.end()){
-                     cout << curr_recursion[i] << " " << (*it).second << std::endl;
                      next_recursion += (*it).second;
-                     cout << next_recursion << std::endl;
                  } else {
                      next_recursion += curr_recursion[i];
                  }
             }
-            cout << "wstawiono nowa\n";
             recursions_.push_back(next_recursion);
         }
         return recursions_.back();

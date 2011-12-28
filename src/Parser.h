@@ -6,9 +6,6 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 
-// TODO: Pomyśleć o alternatywie podawania błędów tak by aplikacja mogła
-// we wlasnym zakresie wyświetlać błędy
-
 //Wstępna deklaracja LSystemu
 class LSystem;
 

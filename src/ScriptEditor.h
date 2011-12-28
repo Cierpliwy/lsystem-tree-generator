@@ -67,7 +67,7 @@ private:
 // oznaczenie o błędzie.
 class ScriptEditorMargin : public QWidget {
 public:
-    ScriptEditorMargin(ScriptEditor *editor = 0) : QWidget(editor) {
+    ScriptEditorMargin(ScriptEditor *editor) : QWidget(editor) {
         this->editor = editor;
     }
 
