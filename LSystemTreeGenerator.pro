@@ -20,3 +20,6 @@ HEADERS  += src/Parser.h \
     src/MainWindow.h \
     src/LSystem.h \
     src/ScriptEditor.h
+
+OTHER_FILES += \
+    README

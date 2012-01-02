@@ -1,5 +1,26 @@
-*************************************************************
-*         GENEROWANIE DRZEW W 3D WEDŁUG LSYSTEMÓW           *
-*-----------------------------------------------------------*
-* autorzy: Przemysław Lenart i Zofia Abramowska             *
-*************************************************************
+--------------------------------------------------------------
+|         GENEROWANIE DRZEW W 3D WEDŁUG LSYSTEMÓW            |
+|------------------------------------------------------------|
+|       autorzy: Przemysław Lenart i Zofia Abramowska        |
+--------------------------------------------------------------
+
+= 1. Krótki opis projektu ====================================
+
+Zadaniem projektu jest wygenerowanie drzew 3D wg. L-systemu
+- zestawu reguł służącego do stworzenia graficznych tworów o
+fraktalnej budowie. Reguły te, w jaki sposób użytkownik
+będzie mógł opisać L-System ,są zdefiniowane przez autorski
+język skryptowy.
+
+= 2. Kompilacja ==============================================
+
+Do skompilowania projektu wymagane jest biblioteka Qt możliwie
+w najnowszej wersji oraz biblioteka Boost, której nagłówki są
+wykorzystywane w projekcie.
+
+Uwaga: w środowisku Windows należy dodać ścieżkę do biblioteki
+Boost poprzez dodanie linii w pliku LSystemTreeGenerator.pro :
+
+INCLUDEPATH += <twoja ścieżka>
+
+
