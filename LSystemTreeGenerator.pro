@@ -27,3 +27,6 @@ HEADERS  += src/Parser.h \
 
 OTHER_FILES += \
     README
+
+INCLUDEPATH += \
+    "D:/studia/ZPR/boost/boost_1_48_0"

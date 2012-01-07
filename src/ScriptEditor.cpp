@@ -199,7 +199,7 @@ void ScriptEditor::keyPressEvent(QKeyEvent * event) {
 //Konstruktor klasy kolorującej składnie skryptu do L-systemów. Przekazujemy
 //dokument do rodzica.
 LSystemScriptHighlighter::LSystemScriptHighlighter(QTextDocument *document)
-    : QSyntaxHighlighter(document) {
+    : QSyntaxHighlighter(document), numberRegExp("[-+]?[0-9]*\\.?[0-9]*([eE][-+]?[0-9]+)?") {
 
     //Jasny niebieski i pogrubiony dla słów kluczowych.
     keywordFormat.setForeground(QColor(22, 104, 135));
@@ -211,6 +211,9 @@ LSystemScriptHighlighter::LSystemScriptHighlighter(QTextDocument *document)
 
     //Ciemny zielony dla znaków.
     charFormat.setForeground(QColor(12, 95, 38));
+
+    //Jasny fioletowy dla liczb.
+    numberFormat.setForeground(QColor(163, 73, 164));
 
 }
 
@@ -246,7 +249,9 @@ void LSystemScriptHighlighter::highlightBlock(const QString &text) {
         //Mamy jeden znak
         case CHAR:
             if( i == text.length() || isIgnoredChar(text.at(i)) ) {
-                setFormat(startPos, i-startPos, charFormat);
+                if(text.at(i-1).isDigit())
+                    setFormat(startPos, i-startPos, numberFormat);
+                else setFormat(startPos, i-startPos, charFormat);
                 state = NONE;
                 break;
             }
@@ -259,8 +264,13 @@ void LSystemScriptHighlighter::highlightBlock(const QString &text) {
                 if( tmp == "alphabet" || tmp == "axiom" ||
                     tmp == "rules" || tmp == "define" )
                     setFormat(startPos,i-startPos,keywordFormat);
-                else
-                    setFormat(startPos,i-startPos,stringFormat);
+                else {
+                    //Sprawdzamy czy nie jest liczbą.
+                    if( numberRegExp.exactMatch(tmp) )
+                        setFormat(startPos,i-startPos,numberFormat);
+                    else
+                        setFormat(startPos,i-startPos,stringFormat);
+                }
                 state = NONE;
             }
             break;

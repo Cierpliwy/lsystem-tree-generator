@@ -110,6 +110,10 @@ private:
     QTextCharFormat keywordFormat;
     QTextCharFormat stringFormat;
     QTextCharFormat charFormat;
+    QTextCharFormat numberFormat;
+
+    //Regularne wyrażenie dla liczby.
+    QRegExp numberRegExp;
 };
 
 #endif // SCRIPTEDITOR_H

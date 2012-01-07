@@ -19,6 +19,9 @@ struct ParseError
     std::string description;
 };
 
+//Skrót do wektora LSystemów.
+typedef std::vector<boost::shared_ptr<LSystem> > LSystemVector;
+
 //Klasa odpowidzialna za tworzenie obiektów LSystemów.
 class Parser
 {
@@ -31,7 +34,7 @@ public:
     bool parseLSystem( const std::string& script_string );
 
     //Zwraca listę Lsystemów, sparsowanych przez Parser.
-    std::vector<boost::shared_ptr<LSystem> > getLSystems() const;
+    LSystemVector getLSystems() const;
 
     //Zwraca listę błędów, które wystąpiły podczas parsowania skryptu.
     const std::vector<ParseError>& getErrors() const;

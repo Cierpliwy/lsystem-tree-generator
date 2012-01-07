@@ -94,15 +94,15 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
     //Tymczasowy string do przeanalizowania
     string tmpString;
     //Aktualnie wybrany znak reguły
-    char ruleChar;
+    char ruleChar = '\0';
     //Czy reguła zostala ustawiona
-    bool ruleSet;
+    bool ruleSet = false;
     //Aktualnie przetwarzany znak definicji
-    char defineChar;
+    char defineChar = '\0';
     //Czy definicja zostala ustawiona
     bool defineSet;
     //Referencja na aktualnie przerabianą komendę.
-    const Command *defineCmd;
+    const Command *defineCmd = NULL;
     //Lista argumentów aktualnie przetwarzanej komendy.
     vector<float> defineParams;
     //Czy zakonczono parsowanie LSystemu
