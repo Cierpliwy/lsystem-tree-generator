@@ -10,7 +10,7 @@ ScriptEditor::ScriptEditor(QWidget *parent) :
     QPlainTextEdit(parent) {
 
     // Ustawienia podstawowe edytora.
-    QFont editorFont("Monospace",11);
+    QFont editorFont("Consolas",10);
     editorFont.setStyleHint(QFont::TypeWriter);
     setFont(editorFont);
     setTabStopWidth(20);
