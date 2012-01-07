@@ -25,22 +25,5 @@ HEADERS  += src/Parser.h \
     src/LSystemModelInterface.h \
     src/LSystemTextModel.h
 
-OTHER_FILES += README
-
-
-
-
-
-
-
-
-
-
-
-
-=======
-    src/ScriptEditor.h
-
 OTHER_FILES += \
     README
->>>>>>> eb206199445e8bee9078ac8e2fae1eeb85e55884
