@@ -93,6 +93,7 @@ private:
         RULES_EQUAL,
         RULES_STRING,
         DEFINE_KEYWORD,
+        DEFINE_COLON,
         DEFINE_CHAR,
         DEFINE_EQUAL,
         DEFINE_COMMAND,

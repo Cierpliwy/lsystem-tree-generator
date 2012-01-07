@@ -7,8 +7,23 @@
 
 //Struktura opisująca deklarację komendy.
 struct Command{
+    //Nazwa komendy
     std::string name;
+    //Liczba argumentów komendy
     unsigned int args;
+    //Wektor argumentów (już konkretnego wywołania komendy)
+    std::vector<float> argv;
+
+
+    //Konstruktor domyślny.
+    Command(){}
+
+    //Konstruktor ustawiający nazwę komendy oraz jej liczbę argumentów
+    //zmiennoprzecinkowych.
+    Command(const std::string& new_name, unsigned int new_args) {
+        name = new_name;
+        args = new_args;
+    }
 };
 
 //Klasa opisująca L-System.
@@ -36,7 +51,7 @@ public:
     void addDefinition(char letter, const Command cmd) { definitions_[letter] = cmd;}
 
     //Zwraca mapę definicji.
-    const std::map<char, Command> getDefinitionMap() const { return definitions_; }
+    const std::map<char, Command>& getDefinitionMap() const { return definitions_; }
 
     //Zwraca ostatnią głębokość rekurencji.
     int getRecDepth() const { return recursions_.size();}

@@ -8,6 +8,7 @@
 #include "MainWindow.h"
 #include "ScriptEditor.h"
 #include "Parser.h"
+#include "LSystemModelInterface.h"
 
 using namespace std;
 
@@ -55,6 +56,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Tworzymy parsera.
     parser = &Parser::getInstance();
+    //Ustawiamy domyślne komendy i rejestrujemy je w parserze.
+    LSystemModelInterface::addCommand(Command("move",1));
+    LSystemModelInterface::addCommand(Command("angle",3));
+    LSystemModelInterface::addCommand(Command("push",0));
+    LSystemModelInterface::addCommand(Command("pop",0));
+    parser->registerCommands();
 
     //Łączymy sygnał klinicięcia przycisku Parsuj z rzeczywistym parsowaniem.
     connect(parseButton, SIGNAL(clicked()), this, SLOT(parse()));

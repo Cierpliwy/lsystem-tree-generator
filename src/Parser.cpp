@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
 using namespace boost;
@@ -96,6 +97,14 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
     char ruleChar;
     //Czy reguła zostala ustawiona
     bool ruleSet;
+    //Aktualnie przetwarzany znak definicji
+    char defineChar;
+    //Czy definicja zostala ustawiona
+    bool defineSet;
+    //Referencja na aktualnie przerabianą komendę.
+    const Command *defineCmd;
+    //Lista argumentów aktualnie przetwarzanej komendy.
+    vector<float> defineParams;
     //Czy zakonczono parsowanie LSystemu
     bool lsystemFinished = false;
     //Czyścimy wektor błędów
@@ -333,7 +342,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                 }
                 else {
                     if( ruleSet ) {
-                        if( scriptString_->at(tmpPosition) == ';' ) state_ = LSYSTEM_END;
+                        if( scriptString_->at(tmpPosition) == ';' ) state_ = DEFINE_KEYWORD;
                         else state_ = RULES_CHAR;
                         position_++;
                     } else {
@@ -341,7 +350,164 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                     }
                 }
             }
-                break;
+            break;
+
+        case DEFINE_KEYWORD:
+            //Sprawdzamy czy sa aktualnie wprowadzane definicje
+            tmpPosition = skipUntilWhiteCharOr(':','\n');
+            tmpString = scriptString_->substr(position_, tmpPosition-position_);
+            if( tmpString.compare("define") == 0 ) {
+                position_ = tmpPosition;
+                state_ = DEFINE_COLON;
+            } else reportError("Po zdefinowaniu zasad musi wystąpić słowo kluczowe 'define' i następujący po nim dwukropek.");
+            break;
+
+        case DEFINE_COLON:
+            //Upewniamy sie ze jest dwukropek
+            if( scriptString_->at(position_) == ':' ) {
+                position_++;
+                state_ = DEFINE_CHAR;
+            } else reportError("Po słowie kluczowym 'define' musi wystąpić dwukropek.");
+            break;
+
+        case DEFINE_CHAR:
+            //Przypisujemy definicję do danego znaku
+            defineSet = false;
+            defineParams.clear();
+            defineCmd = NULL;
+            tmpPosition = skipUntilWhiteCharOr('=','\n');
+            tmpString = scriptString_->substr(position_, tmpPosition-position_);
+            if( tmpString.length() == 1) {
+                if( lsystem_->getDefinitionMap().find(tmpString.at(0)) == lsystem_->getDefinitionMap().end()) {
+                    //Sprawdzamy czy znak należy do alfabetu.
+                    if( alphabet_.find(tmpString.at(0)) == alphabet_.end() ) {
+                        stringstream ss;
+                        ss << "Znak definicji '" << tmpString.at(0) << "' nie występuje w alfabecie.";
+                        reportError(ss.str());
+                    } else {
+                        //Nie znaleziono takiego znaku w definicjach wiec dodajemy
+                        defineChar = tmpString.at(0);
+                        position_ = tmpPosition;
+                        state_ = DEFINE_EQUAL;
+                    }
+                }
+                else {
+                    stringstream ss;
+                    ss << "Definicja '" << tmpString.at(0) << "' została już zdefiniowana. Redefinicja definicji jest zabroniona.";
+                    reportError(ss.str());
+                }
+            }
+            else {
+                //Nie podano poprawnego znaku
+                if( tmpString.length() == 0 ) reportError("Przed znakiem równości musi wystąpić znak definicji.");
+                else {
+                    stringstream ss;
+                    ss << "Ciąg '" << tmpString << "' jest niepoprawnym znakiem definicji. Oczekiwano pojedyńczego znaku zdefiniowanego alfabetu.";
+                    reportError(ss.str());
+                }
+            }
+            break;
+
+        case DEFINE_EQUAL:
+            //Upewniamy się że jest rowność
+            if( scriptString_->at(position_) == '=' ) {
+                position_++;
+                state_ = DEFINE_COMMAND;
+            } else reportError("Po znaku definicji musi wystąpić znak równości.");
+            break;
+
+        case DEFINE_COMMAND:
+            //Pobieramy ciąg który mówi o typie komendy.
+            tmpPosition = skipUntilWhiteCharOr(',',';');
+            tmpString = scriptString_->substr(position_, tmpPosition-position_);
+            if( tmpString.length() > 0 ){
+                //Sprawdzamy czy komenda istnieje.
+                vector<Command>::const_iterator it = commands_.begin();
+                for(; it != commands_.end(); ++it) {
+                    if( it->name.compare(tmpString) == 0 ) break;
+                }
+                if( it != commands_.end()) {
+                    //Komenda została znaleziona.
+                    defineCmd = &*it;
+                    position_ = tmpPosition;
+                    state_ = DEFINE_PARAM;
+                } else {
+                    //Komenda nie została znaleziona.
+                    stringstream ss;
+                    ss << "Komenda '" << tmpString << "' nie istnieje na liście dozwolonych komend.";
+                    reportError(ss.str());
+                }
+            } else {
+                //Sprawdzamy czy możemy zakończyć od razu komendę (dla komend bezparametrowych)
+                if( defineCmd != NULL ) {
+                    state_ = DEFINE_PARAM;
+                } else reportError("Spodziewano się nazwy komendy.");
+            }
+            break;
+
+        case DEFINE_PARAM:
+            //Pobieramy parametry.
+            tmpPosition = skipUntilWhiteCharOr(';',',');
+            tmpString = scriptString_->substr(position_, tmpPosition-position_);
+            if( tmpString.length() > 0 ) {
+                //Sprawdzamy czy nie przekroczyliśmy liczby argumentów.
+                if( defineParams.size() < defineCmd->args) {
+                    //Sprawdzamy czy jest liczbą zmiennoprzecinkową.
+                    bool isFloat = true;
+                    float arg;
+                    try {
+                        arg = boost::lexical_cast<float>(tmpString);
+                    } catch( bad_lexical_cast &e) {
+                        isFloat = false;
+                    }
+                    if( isFloat ) {
+                        //Dodajemy liczbę do listy argumentów.
+                        defineParams.push_back(arg);
+                        position_ = tmpPosition;
+                    }
+                    else {
+                        stringstream ss;
+                        ss << "'" << tmpString << " nie jest poprawną liczbą zmiennoprzecinkową.";
+                        reportError(ss.str());
+                    }
+                }
+                else {
+                    stringstream ss;
+                    ss << "Nie spodziewano się kolejnego argumentu w komendzie '" << defineCmd->name << "'. "
+                       << "Zakończ definicję ';' bądź podaj nową definicję po ','.";
+                    reportError(ss.str());
+                }
+            } else {
+                //Musimy sprawdzic na jakim znaku zatrzymal sie parser. Mógł zatrzymać się na za plikiem
+                //wtedy sprawdzenia może zawiesić program.
+                if( tmpPosition >= scriptString_->length()) {
+                    errors_ = true;
+                }
+                else {
+                    //Sprawdzamy czy definicja została utworzona.
+                    if( defineCmd->args == defineParams.size()) {
+                        if( scriptString_->at(tmpPosition) == ';' ) state_ = LSYSTEM_END;
+                        else state_ = DEFINE_CHAR;
+                        position_++;
+
+                        //Dodajemy definicję do Lsystemu.
+                        Command newCommand = *defineCmd;
+                        newCommand.argv = defineParams;
+                        lsystem_->addDefinition(defineChar, newCommand);
+
+                    } else {
+                        stringstream ss;
+                        ss << "Podano złą liczbę argumentów dla komendy '" << defineCmd->name << "'. "
+                           << "Spodziewano się " << defineCmd->args;
+                        if( defineCmd->args > 1)
+                            ss << " komend.";
+                        else
+                            ss << " komendy.";
+                        reportError(ss.str());
+                    }
+                }
+            }
+            break;
 
         case LSYSTEM_END:
             //Sprawdzamy czy jest znak '}'
@@ -414,6 +580,24 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                 break;
             case RULES_STRING:
                 parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się ciągu reguły, następnej reguły ',', bądź zakończenia definicji reguł ';'."));
+                break;
+            case DEFINE_KEYWORD:
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się słowa kluczowego 'define'."));
+                break;
+            case DEFINE_COLON:
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się ':' po słowie kluczowym 'define'."));
+                break;
+            case DEFINE_CHAR:
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się znaku definicji."));
+                break;
+            case DEFINE_EQUAL:
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się równości '=' po znaku definicji."));
+                break;
+            case DEFINE_COMMAND:
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się nazwy komendy po znaku równości."));
+                break;
+            case DEFINE_PARAM:
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się parametru komendy, następnej definicji ',', bądź zakończenia definicji ';'."));
                 break;
             default:
                 parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Nieznany błąd"));
