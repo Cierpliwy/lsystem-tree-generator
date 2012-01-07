@@ -5,6 +5,12 @@
 #include <string>
 #include <map>
 
+//Struktura opisująca deklarację komendy.
+struct Command{
+    std::string name;
+    unsigned int args;
+};
+
 //Klasa opisująca L-System.
 class LSystem
 {
@@ -26,8 +32,11 @@ public:
     //Zwraca mapę reguł.
     const std::map<char, std::string>& getRuleMap() const { return rules_; }
 
-    //void addDefinition(char letter, const command cmd) { definitions_[letter] = cmd;}
-    //const std::map<char, command> getDefinitionMap() const { return definitions_; }
+    //Dodaje powiązanie między komendą a znakiem.
+    void addDefinition(char letter, const Command cmd) { definitions_[letter] = cmd;}
+
+    //Zwraca mapę definicji.
+    const std::map<char, Command> getDefinitionMap() const { return definitions_; }
 
     //Zwraca ostatnią głębokość rekurencji.
     int getRecDepth() const { return recursions_.size();}
@@ -36,12 +45,14 @@ public:
     const std::string& generate(int recursion_depth);
 
 protected:
-private:
     std::string name_;
     std::string axiom_;
     std::map<char, std::string> rules_;
-    //map<char, command> definitions_;
+    std::map<char, Command> definitions_;
     std::vector<std::string> recursions_;
+
+private:
+
 
 };
 

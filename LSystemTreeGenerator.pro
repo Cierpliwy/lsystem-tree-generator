@@ -14,9 +14,25 @@ SOURCES += src/Parser.cpp \
     src/MainWindow.cpp \
     src/Main.cpp \
     src/LSystem.cpp \
-    src/ScriptEditor.cpp
+    src/ScriptEditor.cpp \
+    src/LSystemModelInterface.cpp \
+    src/LSystemTextModel.cpp
 
 HEADERS  += src/Parser.h \
     src/MainWindow.h \
     src/LSystem.h \
-    src/ScriptEditor.h
+    src/ScriptEditor.h \
+    src/LSystemModelInterface.h \
+    src/LSystemTextModel.h
+
+
+
+
+
+
+
+
+
+
+
+

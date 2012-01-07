@@ -5,9 +5,10 @@
 #include <vector>
 #include <set>
 #include <boost/shared_ptr.hpp>
+#include "LSystem.h"
 
 //Wstępna deklaracja LSystemu
-class LSystem;
+class LSystemModelInterface;
 
 //Opis błędu rzucanego przez Parser.
 struct ParseError
@@ -35,6 +36,9 @@ public:
     //Zwraca listę błędów, które wystąpiły podczas parsowania skryptu.
     const std::vector<ParseError>& getErrors() const;
 
+    //Rejestruje definicje komend dla danego modelu LSystemu
+    void registerCommands();
+
 protected:
 
     //Prywatny konstruktor domyślny i kopiujący, ponieważ Parser jest singletonem.
@@ -49,10 +53,13 @@ protected:
 
     //Lista LSystemów, aktualnie skompilowanych przez Parser.
     std::vector<boost::shared_ptr<LSystem> > lsystems_;
+
+    //Lista komend dostępna dla parsera.
+    std::vector<Command> commands_;
   
 private:
 
-    //Sprawdza czy dane slowo jest nazwa LSystemu
+    //Sprawdza czy dane slowo jest poprawną nazwą LSystemu
     bool isLSystemName(const std::string& name) const;
 
     //Omija biale znaki w skrypcie. Zwraca fałsz gdy przekroczono ciąg znaków.
@@ -85,6 +92,11 @@ private:
         RULES_CHAR,
         RULES_EQUAL,
         RULES_STRING,
+        DEFINE_KEYWORD,
+        DEFINE_CHAR,
+        DEFINE_EQUAL,
+        DEFINE_COMMAND,
+        DEFINE_PARAM,
         LSYSTEM_END
     };
 

@@ -1,5 +1,5 @@
 #include "Parser.h"
-#include "LSystem.h"
+#include "LSystemModelInterface.h"
 
 #include <iostream>
 #include <sstream>
@@ -434,4 +434,7 @@ vector<shared_ptr<LSystem> > Parser::getLSystems() const { return lsystems_; }
 //Funkcja zwraca błędy, które wystąpiły
 const vector< ParseError >& Parser::getErrors() const { return parseErrors_; }
 
-
+//Funkcja rejestrująca dostępne komendy dla wszystkich modeli.
+void Parser::registerCommands() {
+    commands_ = LSystemModelInterface::getCommands();
+}
