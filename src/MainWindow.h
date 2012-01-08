@@ -12,6 +12,7 @@ class Parser;
 class LSystemScriptHighlighter;
 class QTreeView;
 class ErrorListModel;
+class GLWidget;
 
 class MainWindow : public QWidget
 {
@@ -46,6 +47,9 @@ private:
     QPushButton *loadButton;
     QPushButton *saveButton;
     QLabel *editorStatusBar;
+
+    //Główne okno do renderowania LSystemów
+    GLWidget* glWidget;
 
     //Singleton parsera.
     Parser *parser;
