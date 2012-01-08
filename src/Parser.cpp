@@ -99,8 +99,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
     bool ruleSet = false;
     //Aktualnie przetwarzany znak definicji
     char defineChar = '\0';
-    //Czy definicja zostala ustawiona
-    bool defineSet;
     //Referencja na aktualnie przerabianą komendę.
     const Command *defineCmd = NULL;
     //Lista argumentów aktualnie przetwarzanej komendy.
@@ -372,7 +370,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
 
         case DEFINE_CHAR:
             //Przypisujemy definicję do danego znaku
-            defineSet = false;
             defineParams.clear();
             defineCmd = NULL;
             tmpPosition = skipUntilWhiteCharOr('=','\n');

@@ -34,7 +34,6 @@ MainWindow::MainWindow(QWidget *parent)
     errorListModel = new ErrorListModel;
     errorTreeView->setModel(errorListModel);
     errorTreeView->setRootIsDecorated(false);
-    errorTreeView->setColumnWidth(0,50);
 
     //Główny layout okna.
     QHBoxLayout *mainLayout = new QHBoxLayout;
