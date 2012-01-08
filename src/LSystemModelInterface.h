@@ -12,7 +12,7 @@ public:
     //Zwraca wektor komend
     static const std::vector<Command>& getCommands() {return commands_;}
     //Funkcja generująca drzewo 3D
-    virtual void process(const LSystem& l, int recursion) = 0;
+    virtual void process(LSystem& l, int recursion) = 0;
 
 protected:
     static std::vector<Command> commands_;
