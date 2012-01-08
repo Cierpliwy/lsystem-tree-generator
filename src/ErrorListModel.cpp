@@ -52,21 +52,29 @@ QVariant ErrorListModel::data(const QModelIndex &index, int role) const {
 
 //Ustawiamy aktualną listę błędów.
 void ErrorListModel::setParseErrors(const std::vector<ParseError> &parse_errors) {
+
     //Usuwamy wszystkie linie.
-    beginRemoveRows(QModelIndex(),0,parseErrors_.size()-1);
-    endRemoveRows();
+    if( parseErrors_.size() > 0) {
+        beginRemoveRows(QModelIndex(),0,parseErrors_.size()-1);
+        endRemoveRows();
+    }
 
     parseErrors_ = parse_errors;
 
     //Aktualizujemy listę by odświeżyła widok.
-    beginInsertRows(QModelIndex(),0,parseErrors_.size()-1);
-    endInsertRows();
+    if( parseErrors_.size() > 0) {
+        beginInsertRows(QModelIndex(),0,parseErrors_.size()-1);
+        endInsertRows();
+    }
 }
 
 void ErrorListModel::removeParseErrors() {
+
     //Usuwamy wszystkie linie.
-    beginRemoveRows(QModelIndex(),0,parseErrors_.size()-1);
-    endRemoveRows();
+    if( parseErrors_.size() > 0) {
+        beginRemoveRows(QModelIndex(),0,parseErrors_.size()-1);
+        endRemoveRows();
+    }
 
     parseErrors_ = std::vector<ParseError>();
 }
