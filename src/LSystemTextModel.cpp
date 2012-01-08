@@ -16,7 +16,7 @@ void LSystemTextModel::process(LSystem &l, int recursion) {
             if(it != l.getDefinitionMap().end()){
                 buffer_.append(it->second.name.c_str());
                 buffer_.append(" ");
-                for(int i = 0; i < it->second.args; ++i){
+                for(unsigned int i = 0; i < it->second.args; ++i){
                     std::stringstream ss;
                     ss << it->second.argv[i] << " ";
                     buffer_.append(ss.str().c_str());
