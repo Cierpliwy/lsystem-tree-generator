@@ -82,26 +82,32 @@ void ScriptEditor::resizeEvent(QResizeEvent *e) {
 }
 
 // Podświtlamy aktualną linię.
-void ScriptEditor::highlightBlocks(const std::vector<int> &block_list) {
+void ScriptEditor::highlightBlocks(const std::vector<ParseError> &parse_errors) {
     QList<QTextEdit::ExtraSelection> extraSelections;
 
     if(!isReadOnly()) {
 
-        vector<int>::const_iterator it = block_list.begin();
-        for(;it!=block_list.end();++it) {
-            if( *it > 0 && *it <= blockCount() ) {
+        vector<ParseError>::const_iterator it = parse_errors.begin();
+        for(;it!=parse_errors.end();++it) {
+            if( (int)it->row > 0 && (int)it->row <= blockCount() ) {
                 QTextEdit::ExtraSelection selection;
                 QColor lineColor = QColor(247, 153, 153);
 
                 selection.format.setBackground(lineColor);
                 selection.format.setProperty(QTextFormat::FullWidthSelection,true);
-                selection.cursor = QTextCursor(document()->findBlockByLineNumber(*it-1));
+                selection.cursor = QTextCursor(document()->findBlockByLineNumber(it->row-1));
                 selection.cursor.clearSelection();
                 extraSelections.append(selection);
             }
         }
     }
 
+    setExtraSelections(extraSelections);
+}
+
+//Czyścimy wszystkie zaznaczenia.
+void ScriptEditor::cleanAllHighlights() {
+    QList<QTextEdit::ExtraSelection> extraSelections;
     setExtraSelections(extraSelections);
 }
 
@@ -194,6 +200,18 @@ void ScriptEditor::keyPressEvent(QKeyEvent * event) {
             textCursor().deletePreviousChar();
         textCursor().insertText("}");
     }
+}
+
+//Przesuwamy kursor do podanego miejsca.
+void ScriptEditor::moveCursorTo(int row, int column) {
+
+    QTextCursor cursor(textCursor());
+    cursor.movePosition(QTextCursor::Start);
+    for(int i = 1; i < row; ++i) {
+        cursor.movePosition(QTextCursor::NextBlock);
+    }
+    cursor.movePosition(QTextCursor::NextCharacter,QTextCursor::MoveAnchor,column);
+    setTextCursor(cursor);
 }
 
 //Konstruktor klasy kolorującej składnie skryptu do L-systemów. Przekazujemy

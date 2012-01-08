@@ -5,6 +5,7 @@
 #include <QPlainTextEdit>
 #include <QSyntaxHighlighter>
 #include <cstdio>
+#include "Parser.h"
 
 //Deklaracja z wyprzedzeniem.
 class ScriptEditorMargin;
@@ -38,7 +39,11 @@ protected:
 public slots:
 
     //Podświetlamy linie, które podano w liście
-    void highlightBlocks(const std::vector<int> &block_list);
+    void highlightBlocks(const std::vector<ParseError> &parse_errors);
+    //Czyścimy wszystkie podświetlenia.
+    void cleanAllHighlights();
+    //Przenosimy kursor myszy do podanej pozycji.
+    void moveCursorTo(int row, int column);
 
 private slots:
 
