@@ -13,6 +13,7 @@ class LSystemScriptHighlighter;
 class QTreeView;
 class ErrorListModel;
 class GLWidget;
+class LSystemGLModel;
 
 class MainWindow : public QWidget
 {
@@ -50,7 +51,8 @@ private:
 
     //Główne okno do renderowania LSystemów
     GLWidget* glWidget;
-
+    //
+    LSystemGLModel *glModel_;
     //Singleton parsera.
     Parser *parser;
 

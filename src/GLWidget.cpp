@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "GLWidget.h"
+#include "Drawable.h"
 
 //Konstruktor ustawia podwójne buforowanie.
 GLWidget::GLWidget(QWidget *parent) :
@@ -13,9 +14,11 @@ GLWidget::GLWidget(QWidget *parent) :
     //Początkowe ustawienie kamery.
     rotation.setX(90);
     rotation.setY(180);
-    rotation.setZ(10);
+    rotation.setZ(100);
     //Wyliczamy współrzędne punktu.
     polarToCartesian();
+    drawableObject_ = NULL;
+
 }
 
 //Przelicza współrzędne biegunowe na kartezjańskie
@@ -65,7 +68,7 @@ void GLWidget::wheelEvent(QWheelEvent *event) {
 
     //O ile stopni przesunął się scroll.
     int degrees = event->delta()/8;
-    float radiusDelta = degrees/30.0*10;
+    float radiusDelta = degrees/30.0*30;
     rotation.setZ(rotation.z()-radiusDelta);
     if( rotation.z() <= 0 ) rotation.setZ(0.0001);
 
@@ -83,6 +86,8 @@ void GLWidget::initializeGL() {
     glShadeModel(GL_SMOOTH);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
 }
 
 //Funkcja rysująca scenę OpenGL (na razie testowy kwadrat)
@@ -93,38 +98,9 @@ void GLWidget::paintGL() {
     glLoadIdentity();
     gluLookAt(camera.x(),camera.y(),camera.z(),0,0,0,0,1,0);
 
-    glBegin(GL_QUADS);
-    glColor3f(0.09f,0.67f,0.2f);
-    glVertex3f( 1.0f, 1.0f,-1.0f);
-    glVertex3f(-1.0f, 1.0f,-1.0f);
-    glVertex3f(-1.0f, 1.0f, 1.0f);
-    glVertex3f( 1.0f, 1.0f, 1.0f);
-    glColor3f(0.9f,0.7f,0.4f);          // Set The Color To Orange
-    glVertex3f( 1.0f,-1.0f, 1.0f);          // Top Right Of The Quad (Bottom)
-    glVertex3f(-1.0f,-1.0f, 1.0f);          // Top Left Of The Quad (Bottom)
-    glVertex3f(-1.0f,-1.0f,-1.0f);          // Bottom Left Of The Quad (Bottom)
-    glVertex3f( 1.0f,-1.0f,-1.0f);          // Bottom Right Of The Quad (Bottom)
-    glColor3f(0.7f,0.3f,0.2f);          // Set The Color To Red
-    glVertex3f( 1.0f, 1.0f, 1.0f);          // Top Right Of The Quad (Front)
-    glVertex3f(-1.0f, 1.0f, 1.0f);          // Top Left Of The Quad (Front)
-    glVertex3f(-1.0f,-1.0f, 1.0f);          // Bottom Left Of The Quad (Front)
-    glVertex3f( 1.0f,-1.0f, 1.0f);          // Bottom Right Of The Quad (Front)
-    glColor3f(0.45f,0.82f,0.03f);          // Set The Color To Yellow
-    glVertex3f( 1.0f,-1.0f,-1.0f);          // Bottom Left Of The Quad (Back)
-    glVertex3f(-1.0f,-1.0f,-1.0f);          // Bottom Right Of The Quad (Back)
-    glVertex3f(-1.0f, 1.0f,-1.0f);          // Top Right Of The Quad (Back)
-    glVertex3f( 1.0f, 1.0f,-1.0f);          // Top Left Of The Quad (Back)
-    glColor3f(0.43f,0.75f,1.0f);          // Set The Color To Blue
-    glVertex3f(-1.0f, 1.0f, 1.0f);          // Top Right Of The Quad (Left)
-    glVertex3f(-1.0f, 1.0f,-1.0f);          // Top Left Of The Quad (Left)
-    glVertex3f(-1.0f,-1.0f,-1.0f);          // Bottom Left Of The Quad (Left)
-    glVertex3f(-1.0f,-1.0f, 1.0f);          // Bottom Right Of The Quad (Left)
-    glColor3f(0.1f,0.3f,0.3f);          // Set The Color To Violet
-    glVertex3f( 1.0f, 1.0f,-1.0f);          // Top Right Of The Quad (Right)
-    glVertex3f( 1.0f, 1.0f, 1.0f);          // Top Left Of The Quad (Right)
-    glVertex3f( 1.0f,-1.0f, 1.0f);          // Bottom Left Of The Quad (Right)
-    glVertex3f( 1.0f,-1.0f,-1.0f);          // Bottom Right Of The Quad (Right)
-    glEnd();
+    if(drawableObject_ != NULL){
+        drawableObject_->draw();
+    }
 
 }
 
@@ -135,7 +111,7 @@ void GLWidget::resizeGL(int w, int h) {
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0,w/h,1,1000);
+    gluPerspective(45.0,w/h,1,10000);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();

@@ -15,6 +15,9 @@
 #include "LSystemModelInterface.h"
 #include "ErrorListModel.h"
 #include "GLWidget.h"
+#include "LSystemGLModel.h"
+
+#define MAX_REC 6
 
 using namespace std;
 
@@ -42,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     QVBoxLayout *glLayout = new QVBoxLayout;
     glLayout->addWidget(glWidget);
     glBox->setLayout(glLayout);
+    glModel_ = new LSystemGLModel;
 
     //Główny layout okna.
     QHBoxLayout *mainLayout = new QHBoxLayout;
@@ -87,7 +91,8 @@ MainWindow::MainWindow(QWidget *parent)
     parser = &Parser::getInstance();
     //Ustawiamy domyślne komendy i rejestrujemy je w parserze.
     LSystemModelInterface::addCommand(Command("move",1));
-    LSystemModelInterface::addCommand(Command("angle",3));
+    LSystemModelInterface::addCommand(Command("draw", 1));
+    LSystemModelInterface::addCommand(Command("rotate",3));
     LSystemModelInterface::addCommand(Command("push",0));
     LSystemModelInterface::addCommand(Command("pop",0));
     parser->registerCommands();
@@ -108,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
     delete editorHighlighter;
+    delete glModel_;
 }
 
 //Parsujemy zawartość okna
@@ -120,6 +126,9 @@ void MainWindow::parse() {
     if(parser->parseLSystem(scriptString)) {
         errorListModel->removeParseErrors();
         editor->cleanAllHighlights();
+        glModel_->process(*(parser->getLSystems().front()),MAX_REC);
+        glWidget->setDrawable(glModel_);
+        glWidget->repaint();
     } else {
         errorListModel->setParseErrors(parser->getErrors());
         editor->highlightBlocks(parser->getErrors());

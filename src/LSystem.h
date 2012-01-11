@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <utility>
 
 //Struktura opisująca deklarację komendy.
 struct Command{
@@ -33,6 +34,8 @@ public:
     LSystem();
     virtual ~LSystem();
 
+    typedef std::pair<std::string, std::vector<int> > RecursionElement;
+
     //Ustawia/Zwraca nazwę L-systemu.
     void setName(const std::string& new_name){ name_ = new_name;}
     const std::string& getName() const { return name_; }
@@ -57,14 +60,14 @@ public:
     int getRecDepth() const { return recursions_.size();}
 
     //Generuje ciąg L-systemu na podanej generacji.
-    const std::string& generate(int recursion_depth);
+    const RecursionElement& generate(int recursion_depth);
 
 protected:
     std::string name_;
     std::string axiom_;
     std::map<char, std::string> rules_;
     std::map<char, Command> definitions_;
-    std::vector<std::string> recursions_;
+    std::vector<RecursionElement> recursions_;
 
 private:
 

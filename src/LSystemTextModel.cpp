@@ -7,7 +7,7 @@ LSystemTextModel::LSystemTextModel()
 }
 
 void LSystemTextModel::process(LSystem &l, int recursion) {
-    QString tmp_buffer;
+    /*  QString tmp_buffer;
     for(int i = 0; i <=recursion; i++){
         tmp_buffer = l.generate(i).c_str();
         for(int i = 0; i < tmp_buffer.size(); i++ ){
@@ -27,4 +27,4 @@ void LSystemTextModel::process(LSystem &l, int recursion) {
         std::cout << tmp_buffer.toStdString() << " " <<  buffer_.toStdString() <<std::endl;
         buffer_.clear();
     }
-}
+*/}
