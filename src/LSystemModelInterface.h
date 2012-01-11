@@ -3,18 +3,25 @@
 #include <vector>
 #include "LSystem.h"
 
+// Interfejs dla modelu, który potrafi przetrzymywać obiekt LSystemu we
+// wsłasnej formie np. Graficznej. Wszystkie interfejsy powinny obsługiwać
+// ten sam zbiór komend dla L-Systemów.
 class LSystemModelInterface
 {
+
 public:
+
     LSystemModelInterface();
-    //Dodanie nowej komendy
+
+
     static void addCommand(const Command& c){ commands_.push_back(c); }
-    //Zwraca wektor komend
     static const std::vector<Command>& getCommands() {return commands_;}
-    //Funkcja generująca drzewo 3D
+
+    // Funkcja odpowiedzialna za przetworzenie L-Systemu do własnej postaci.
     virtual void process(LSystem& l, int recursion) = 0;
 
 protected:
+
     static std::vector<Command> commands_;
 };
 

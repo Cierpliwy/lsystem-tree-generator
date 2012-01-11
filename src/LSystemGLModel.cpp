@@ -11,28 +11,34 @@ LSystemGLModel::LSystemGLModel() {
 }
 
 void LSystemGLModel::draw() {
-    if(processed_){
+    if(processed_) {
+
         const std::string& commands_list = recurtionToDraw_->first;
-        const std::vector<int> recursion_depth_list = recurtionToDraw_->second;
-        for(unsigned int i = 0; i < commands_list.size(); ++i){
+        const std::vector<int>& recursion_depth_list = recurtionToDraw_->second;
+
+        for(unsigned int i = 0; i < commands_list.size(); ++i) {
             map<char, Command>::const_iterator it = (*lsystemToDraw_).getDefinitionMap().find(commands_list[i]);
 
-            if(it != (*lsystemToDraw_).getDefinitionMap().end()){
+            if(it != (*lsystemToDraw_).getDefinitionMap().end()) {
                 const Command& c = it->second;
 
-                if(c.name.compare("move") == 0){
+                if(c.name.compare("move") == 0) {
                     move(c.argv[0]);
-                }else if(c.name.compare("draw") == 0){
+
+                } else if(c.name.compare("draw") == 0) {
                     color_[0] = std::max(i/(float)commands_list.size() - 0.2f,0.6f);
                     color_[1] = std::max(i/(float)commands_list.size() + 0.1f,0.4f);
                     color_[2] = std::max(i/(float)commands_list.size(),0.4f);
-                    std::cout <<  recursion_depth_list[i] << " " << recurtions_ << std::endl;
+
                     draw(c.argv[0]);
-                }else if(c.name.compare("rotate") == 0){
+
+                } else if(c.name.compare("rotate") == 0) {
                     rotate(c.argv[0], c.argv[1], c.argv[2]);
-                }else if(c.name.compare("push") == 0){
+
+                } else if(c.name.compare("push") == 0) {
                     push();
-                }else if(c.name.compare("pop") == 0){
+
+                } else if(c.name.compare("pop") == 0) {
                     pop();
                 }
             }

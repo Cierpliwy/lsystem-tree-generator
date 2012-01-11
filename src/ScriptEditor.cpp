@@ -4,84 +4,67 @@
 
 using namespace std;
 
-// W konstruktorze tworzymy obiekt lewego marginesu oraz
-// łączymy sygnaly ze slotami.
 ScriptEditor::ScriptEditor(QWidget *parent) :
     QPlainTextEdit(parent) {
 
-    // Ustawienia podstawowe edytora.
     QFont editorFont("Consolas",10);
     editorFont.setStyleHint(QFont::TypeWriter);
     setFont(editorFont);
     setTabStopWidth(20);
 
-    // Zmienne pomocnicze do wyznaczania automatycznych wcięć.
-    tabLevel = 0;
-    lastTabLevel = 0;
-    afterLeftBrace = false;
-    lastAfterLeftBrace = false;
-    afterSpaceOnly = false;
-    lastAfterSpaceOnly = false;
+    tabLevel_ = 0;
+    lastTabLevel_= 0;
+    afterLeftBrace_ = false;
+    lastAfterLeftBrace_ = false;
+    afterSpaceOnly_ = false;
+    lastAfterSpaceOnly_ = false;
 
-    // Tworzymy obiekt lewego marginesu.
-    margin = new ScriptEditorMargin(this);
+    margin_ = new ScriptEditorMargin(this);
 
-    // Łączymy wszystkie zdarzenia, ktore wplywają na zmianę wyglądu naszego marginesu,
-    // bądz podświetleń.
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateMarginWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateMargin(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(updateIndentationInfo()));
 
-    //Wyłączamy załamywanie linii.
     setWordWrapMode(QTextOption::NoWrap);
 
-    // Kalkulujemy dla pierwszej linii.
     updateMarginWidth(0);
 }
 
-// Zwracamy wymagany rozmiar marginesu potrzebny do narysowania linii.
 int ScriptEditor::marginWidth() {
-    //Liczba cyfr numeru linii ostatniego bloku.
+
     int digits = 1;
-    //Ile mamy linii.
     int max = qMax(1, blockCount());
-    //Obliczamy liczbe cyfr w ostatniej linii.
+
     while(max >= 10) {
         max /= 10;
         digits ++;
     }
-    //Podajemy szerokość marginesu w pikselach.
+
     int space = 10 + fontMetrics().width(QLatin1Char('9'))*digits;
     return space;
 }
 
-// Funkcja ustawia "prawdziwy" margines dla edytora skryptów
-// byśmy mogli na nim narysować nasz margines.
-void ScriptEditor::updateMarginWidth(int newBlockCount) {
+void ScriptEditor::updateMarginWidth(int newBlocksCount) {
     setViewportMargins(marginWidth(),0,0,0);
 }
 
-// Uaktualniamy margines gdy nastąpiła zmiana rozmiaru lub
-// przewinięcie suwakiem aktualnego tekstu.
 void ScriptEditor::updateMargin(const QRect &rect, int dy) {
     if(dy)
-        margin->scroll(0,dy);
+        margin_->scroll(0,dy);
     else
-        margin->update(0, rect.y(), marginWidth(), rect.height());
+        margin_->update(0, rect.y(), marginWidth(), rect.height());
 
     if( rect.contains(viewport()->rect()))
         updateMarginWidth(0);
 }
 
-// Wywolujemy zdarzenie z klasy bazowej.
 void ScriptEditor::resizeEvent(QResizeEvent *e) {
     QPlainTextEdit::resizeEvent(e);
 
     QRect cr = contentsRect();
-    margin->setGeometry(QRect(cr.left(),cr.top(), marginWidth(), cr.height()));
+    margin_->setGeometry(QRect(cr.left(),cr.top(), marginWidth(), cr.height()));
 }
 
-// Podświtlamy aktualną linię.
 void ScriptEditor::highlightBlocks(const std::vector<ParseError> &parse_errors) {
     QList<QTextEdit::ExtraSelection> extraSelections;
 
@@ -105,17 +88,14 @@ void ScriptEditor::highlightBlocks(const std::vector<ParseError> &parse_errors) 
     setExtraSelections(extraSelections);
 }
 
-//Czyścimy wszystkie zaznaczenia.
 void ScriptEditor::cleanAllHighlights() {
     QList<QTextEdit::ExtraSelection> extraSelections;
     setExtraSelections(extraSelections);
 }
 
-// Funkcja rysująca margines.
 void ScriptEditor::marginPaintEvent(QPaintEvent *event) {
 
-    //Najpierw rysujemy cały margines na niebiesko.
-    QPainter painter(margin);
+    QPainter painter(margin_);
     painter.fillRect(event->rect(), QColor(22, 104, 135));
 
     QTextBlock block = firstVisibleBlock();
@@ -127,7 +107,7 @@ void ScriptEditor::marginPaintEvent(QPaintEvent *event) {
             if (block.isVisible() && bottom >= event->rect().top()) {
                 QString number = QString::number(blockNumber + 1);
                 painter.setPen(Qt::white);
-                painter.drawText(0, top, margin->width()-5, fontMetrics().height(),
+                painter.drawText(0, top, margin_->width()-5, fontMetrics().height(),
                                  Qt::AlignRight, number);
             }
 
@@ -138,63 +118,46 @@ void ScriptEditor::marginPaintEvent(QPaintEvent *event) {
         }
 }
 
-//Zwracamy informację o aktualnych parametrach dotyczących linii:
-//Jaki jest poziom wcięć linii, czy przed kursorem jest znak {.
 void ScriptEditor::updateIndentationInfo() {
 
-    //Zapisujemy poprzedni stan.
-    lastTabLevel = tabLevel;
-    lastAfterLeftBrace = afterLeftBrace;
-    lastAfterSpaceOnly = afterSpaceOnly;
+    lastTabLevel_ = tabLevel_;
+    lastAfterLeftBrace_ = afterLeftBrace_;
+    lastAfterSpaceOnly_ = afterSpaceOnly_;
 
-    //Pobieramy akualną linię w której znajduje się kursor.
     QString currentLine = textCursor().block().text();
-    //Zwracamy aktualną pozycję kursora.
     int currentPos = textCursor().positionInBlock();
 
-    //Srawdzamy poziom wcięć
-    tabLevel = 0;
+    // Srawdzamy poziom wcięć.
+    tabLevel_ = 0;
     int i = 0;
     for(; i < currentLine.length(); ++i) {
         if( currentLine.at(i) != '\t') break;
-        else tabLevel++;
+        else tabLevel_++;
     }
 
-    //Dodatkowe sprawdzanie czy przed kursorem są tylko białe znaki.
-    if( i == currentLine.length() ) afterSpaceOnly = true;
-    else afterSpaceOnly = false;
+    if( i == currentLine.length() ) afterSpaceOnly_ = true;
+    else afterSpaceOnly_ = false;
 
-    //Sprawdzamy czy jesteśmy przed '{'
-    afterLeftBrace = false;
+    afterLeftBrace_ = false;
     for(int i = currentPos-1; i >= 0; --i) {
         if( currentLine.at(i).isSpace()) continue;
-        if( currentLine.at(i) == '{') afterLeftBrace = true;
+        if( currentLine.at(i) == '{') afterLeftBrace_ = true;
         break;
     }
 }
 
-//Dodajemy możliwość generowania automatycznych wcięć.
-//Każde użycie { lub tab zwiększa poziom wcięcia, zaś
-//} lub backspace zmienijsza.
 void ScriptEditor::keyPressEvent(QKeyEvent * event) {
-
-    //Wykonujemy funkcję klasy bazowej.
     QPlainTextEdit::keyPressEvent(event);
 
-    //Jeżeli został naciśnięty klawisz Enter ustawiamy poziom wcięć taki
-    //jak w poprzedniej linii + o jeden poziom większy gdy wcześniej był znak
-    //'{'
     if( event->key() == Qt::Key_Return ) {
-        if( lastAfterLeftBrace ) lastTabLevel++;
-        int tmpTabLevel = lastTabLevel;
+        if( lastAfterLeftBrace_ ) lastTabLevel_++;
+        int tmpTabLevel = lastTabLevel_;
         for(int i=0; i<tmpTabLevel; ++i)
             textCursor().insertText("\t");
     }
 
-    //Jeżeli użytkownik uzył '}' i poziom wcięć jest większy od zera i
-    //kursor znajdował się tylko przed białymi znakami. Cofnij wcięcie.
-    if( event->key() == Qt::Key_BraceRight && lastTabLevel > 0 ) {
-        bool tmpAfterSpaceOnly = lastAfterSpaceOnly;
+    if( event->key() == Qt::Key_BraceRight && lastTabLevel_ > 0 ) {
+        bool tmpAfterSpaceOnly = lastAfterSpaceOnly_;
         textCursor().deletePreviousChar();
         if( tmpAfterSpaceOnly )
             textCursor().deletePreviousChar();
@@ -202,7 +165,6 @@ void ScriptEditor::keyPressEvent(QKeyEvent * event) {
     }
 }
 
-//Przesuwamy kursor do podanego miejsca.
 void ScriptEditor::moveCursorTo(int row, int column) {
 
     QTextCursor cursor(textCursor());
@@ -214,80 +176,66 @@ void ScriptEditor::moveCursorTo(int row, int column) {
     setTextCursor(cursor);
 }
 
-//Konstruktor klasy kolorującej składnie skryptu do L-systemów. Przekazujemy
-//dokument do rodzica.
 LSystemScriptHighlighter::LSystemScriptHighlighter(QTextDocument *document)
-    : QSyntaxHighlighter(document), numberRegExp("[-+]?[0-9]*\\.?[0-9]*([eE][-+]?[0-9]+)?") {
+    : QSyntaxHighlighter(document), numberRegExp_("[-+]?[0-9]*\\.?[0-9]*([eE][-+]?[0-9]+)?") {
 
-    //Jasny niebieski i pogrubiony dla słów kluczowych.
-    keywordFormat.setForeground(QColor(22, 104, 135));
-    keywordFormat.setFontUnderline(true);
+    keywordFormat_.setForeground(QColor(22, 104, 135));
+    keywordFormat_.setFontUnderline(true);
 
-    //Ciemny niebieski dla napisów.
-    stringFormat.setForeground(QColor(15, 70, 91));
-    stringFormat.setFontWeight(QFont::Bold);
+    stringFormat_.setForeground(QColor(15, 70, 91));
+    stringFormat_.setFontWeight(QFont::Bold);
 
-    //Ciemny zielony dla znaków.
-    charFormat.setForeground(QColor(12, 95, 38));
+    charFormat_.setForeground(QColor(12, 95, 38));
 
-    //Jasny fioletowy dla liczb.
-    numberFormat.setForeground(QColor(163, 73, 164));
-
+    numberFormat_.setForeground(QColor(163, 73, 164));
 }
 
-//Sprawdzamy czy aktualnie jest znak który ignorujemy
 bool LSystemScriptHighlighter::isIgnoredChar(QChar c) {
     if( c.isSpace() || c == '{' || c == '}' || c == ';' ||
         c == ':' || c == ',' || c == '=') return true;
     return false;
 }
 
-//Właściwa funkcja kolorująca składnie skryptu L-systemów.
 void LSystemScriptHighlighter::highlightBlock(const QString &text) {
 
-    //Co aktualnie przeglądamy
     enum State {
         NONE,
         CHAR,
         STRING
     } state = NONE;
 
-    //Pozycja początkowa dla formatowania.
     int startPos = 0;
     for(int i = 0; i <= text.length(); ++i)
     {
         switch(state) {
-        //Narazie nic nie mamy.
         case NONE:
-            //Jeżeli natrafiliśmy na biały znak lub znaki specjalne nic nie rób.
             if( i == text.length() || isIgnoredChar(text.at(i)) ) break;
             startPos = i;
             state = CHAR;
             break;
-        //Mamy jeden znak
+
         case CHAR:
             if( i == text.length() || isIgnoredChar(text.at(i)) ) {
                 if(text.at(i-1).isDigit())
-                    setFormat(startPos, i-startPos, numberFormat);
-                else setFormat(startPos, i-startPos, charFormat);
+                    setFormat(startPos, i-startPos, numberFormat_);
+                else setFormat(startPos, i-startPos, charFormat_);
                 state = NONE;
                 break;
             }
             state = STRING;
             break;
-        //Mamy ciąg znaków
+
         case STRING:
             if( i == text.length() || isIgnoredChar(text.at(i)) ) {
                 QString tmp = text.mid(startPos,i-startPos);
                 if( tmp == "alphabet" || tmp == "axiom" ||
                     tmp == "rules" || tmp == "define" )
-                    setFormat(startPos,i-startPos,keywordFormat);
+                    setFormat(startPos,i-startPos,keywordFormat_);
                 else {
-                    //Sprawdzamy czy nie jest liczbą.
-                    if( numberRegExp.exactMatch(tmp) )
-                        setFormat(startPos,i-startPos,numberFormat);
+                    if( numberRegExp_.exactMatch(tmp) )
+                        setFormat(startPos,i-startPos,numberFormat_);
                     else
-                        setFormat(startPos,i-startPos,stringFormat);
+                        setFormat(startPos,i-startPos,stringFormat_);
                 }
                 state = NONE;
             }

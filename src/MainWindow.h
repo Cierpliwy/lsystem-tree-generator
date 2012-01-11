@@ -4,17 +4,18 @@
 #include <QtGui/QWidget>
 #include <QModelIndex>
 
-class ScriptEditor;
 class QPushButton;
 class QPlainTextEdit;
 class QLabel;
+class QTreeView;
+class ScriptEditor;
 class Parser;
 class LSystemScriptHighlighter;
-class QTreeView;
 class ErrorListModel;
 class GLWidget;
 class LSystemGLModel;
 
+// Główne okno programu.
 class MainWindow : public QWidget
 {
     Q_OBJECT
@@ -25,43 +26,32 @@ public:
 
 public slots:
 
-    //Slot parsujący zawartość edytora.
-    void parse();
-    //Uaktualniamy informację o aktualnej pozycji kursora
+    void parseScript();
     void editorCursorChanged();
-    //Klikniecie na błąd z listy błędów powoduje przesunięcie kursora
-    //w odpowiednie miejsce.
+
     void moveCursorToError(QModelIndex index);
-    //kliknięcie prawym przyciskiem na błędzie wyświetli okno z dokładnym opisem błędu.
     void showDetailedError(QModelIndex index);
 
-    //Wczytanie skryptu z pliku
     void loadScript();
-    //Zapisanie skryptu do pliku.
     void saveScript();
 
 private:
 
     //Kontrolki lewego panelu.
-    ScriptEditor *editor;
-    QPushButton *parseButton;
-    QPushButton *loadButton;
-    QPushButton *saveButton;
-    QLabel *editorStatusBar;
+    ScriptEditor *editor_;
+    QPushButton *parseButton_;
+    QPushButton *loadButton_;
+    QPushButton *saveButton_;
+    QLabel *editorStatusBar_;
 
-    //Główne okno do renderowania LSystemów
-    GLWidget* glWidget;
-    //
+    GLWidget* glWidget_;
     LSystemGLModel *glModel_;
-    //Singleton parsera.
-    Parser *parser;
+    Parser *parser_;
 
-    //Widok wyświetlający listę błędów wraz z jego modelem.
-    QTreeView* errorTreeView;
-    ErrorListModel* errorListModel;
+    QTreeView* errorTreeView_;
+    ErrorListModel* errorListModel_;
 
-    //Klasa podświetlająca składnię dla edytora
-    LSystemScriptHighlighter* editorHighlighter;
+    LSystemScriptHighlighter* editorHighlighter_;
 };
 
 #endif // MAINWINDOW_H

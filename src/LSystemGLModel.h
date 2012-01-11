@@ -14,12 +14,16 @@ struct Matrix
 
 class LSystemGLModel : public Drawable, public LSystemModelInterface
 {
+
 public:
+
     LSystemGLModel();
+
     void process(LSystem& l, int recursion);
     void draw();
 
 private:
+
     void move(int length);
     void draw(int length);
     void rotate(int x_axis_angle, int y_axis_angle, int z_axis_angle);
@@ -28,10 +32,13 @@ private:
 
     const LSystem::RecursionElement* recurtionToDraw_;
     const LSystem* lsystemToDraw_;
+
     float recurtions_;
+
     std::vector<Matrix> matrixesStack_;
-    bool processed_;
     float color_[3];
+
+    bool processed_;
 };
 
 #endif // LSYSTEMGLMODEL_H

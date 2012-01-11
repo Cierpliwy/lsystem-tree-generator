@@ -8,23 +8,19 @@
 using namespace std;
 using namespace boost;
 
-//Wskaźnik na instancję klasy Parser.
 Parser* Parser::parserInstance_ = NULL;
 
-//Zwraca instancję klasy Parser.
 Parser& Parser::getInstance() {
     if( parserInstance_ == NULL ) parserInstance_ = new Parser();
     return *parserInstance_;
 }
 
-//Sprawdza czy string jest alfanumeryczny
 bool Parser::isLSystemName(const string& name) const {
     for( string::size_type i = 0; i < name.length(); ++i )
         if( !isalnum(name[i]) && name[i] != '_' ) return false;
     return true;
 }
 
-//Ignoruje biale znaki.
 //Uwaga: position_ moze zostać ustawione poza zakresem
 //ciągu znaków. W takim wypadku funkcja zwraca false.
 bool Parser::ignoreWhiteChars() {
@@ -35,7 +31,6 @@ bool Parser::ignoreWhiteChars() {
     return true;
 }
 
-//Pomija znaki dopoki nie trafi na bialy znak lub znak podany.
 //Uwaga: Jeżeli na niczym się nie zatrzyma ustawi się na
 //pozycji za ostatnim znakiem!
 std::size_t Parser::skipUntilWhiteCharOr(char stop_char, char stop_char2) const {
@@ -45,18 +40,15 @@ std::size_t Parser::skipUntilWhiteCharOr(char stop_char, char stop_char2) const 
     return i;
 }
 
-//Skacze za koniec aktualnego LSystemu.
 //Uwaga: pozycja znaku może się znaleźć za końcem aktualnego
 //ciągu.
 void Parser::jumpToEndOfLSystem() {
     for(;position_ < scriptString_->length(); ++position_)
         if( scriptString_->at(position_) == '}') break;
 
-    //Maksymalnie moze znajdować się za ostatnim znakiem.
     if( position_ < scriptString_->length() ) position_++;
 }
 
-//Zwraca pozycję błędu.
 void Parser::getErrorPosition() {
     errorRow_ = 1;
     errorColumn_ = 0;
@@ -66,7 +58,6 @@ void Parser::getErrorPosition() {
     }
 }
 
-//Raportuje bląd.
 void Parser::reportError(const std::string& error_description) {
     getErrorPosition();
     parseErrors_.push_back(ParseError(errorRow_,errorColumn_,error_description));
@@ -75,56 +66,37 @@ void Parser::reportError(const std::string& error_description) {
     errors_ = true;
 }
 
-//Parsuje skrypt L-Systemu i zwraca wartość false, jeżeli wystąpiły błędy
-//lub wartość true, jeżeli plik został sparsowany poprawnie.
 bool Parser::parseLSystem ( const std::string& script_string ) {
 
-    //Tworzymy LSystem gotowy do uzupelniania.
     lsystem_ = NULL;
-    //Zapisujemy wskaźnik do aktualnego pliku
     scriptString_ = &script_string;
-    //Ustawiamy pozycję w pliku na 0
     position_ = 0;
-    //Stan rozpoczynamy od podania nazwy LSystemu
     state_ = LSYSTEM_NAME;
-    //Czyscimy flage bledow
     errors_ = false;
-    //Tymczasowa pozycja do wyznaczania
     string::size_type tmpPosition;
-    //Tymczasowy string do przeanalizowania
     string tmpString;
-    //Aktualnie wybrany znak reguły
     char ruleChar = '\0';
-    //Czy reguła zostala ustawiona
     bool ruleSet = false;
-    //Aktualnie przetwarzany znak definicji
     char defineChar = '\0';
-    //Referencja na aktualnie przerabianą komendę.
     const Command *defineCmd = NULL;
-    //Lista argumentów aktualnie przetwarzanej komendy.
     vector<float> defineParams;
-    //Czy zakonczono parsowanie LSystemu
     bool lsystemFinished = false;
-    //Czyścimy wektor błędów
     parseErrors_.clear();
-    //Czyścimy tablicę LSystemów
     lsystems_.clear();
 
     //Dopóki pozycja nie przekroczy pliku parsujemy LSystemy
     while( ignoreWhiteChars() ) {
 
-        //Sprawdzamy w jakim jesteśmy stanie.
         switch(state_) {
 
         case LSYSTEM_NAME:
-            //Tutaj czyscimy. Mozemy usuwac bezpiecznie NULL'a.
+
             if( !lsystemFinished ) delete lsystem_;
             lsystem_ = new LSystem;
             lsystemFinished = false;
-            //Czyścimy alfabet
+
             alphabet_.clear();
 
-            //Sprawdzamy nazwe LSystemu
             tmpPosition = skipUntilWhiteCharOr('{','\n');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
 
@@ -152,7 +124,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case LSYSTEM_START:
-            //Sprawdzamy czy jest znak '{'
             if( scriptString_->at(position_) == '{' ) {
                 position_++;
                 state_ = ALPHABET_KEYWORD;
@@ -160,7 +131,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case ALPHABET_KEYWORD:
-            //Sprawdzamy czy aktualnie jest wprowadzany alfabet
             tmpPosition = skipUntilWhiteCharOr(':','\n');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.compare("alphabet") == 0 ) {
@@ -170,7 +140,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case ALPHABET_COLON:
-            //Upewniamy sie ze jest dwukropek
             if( scriptString_->at(position_) == ':' ) {
                 position_++;
                 state_ = ALPHABET_CHAR;
@@ -178,7 +147,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case ALPHABET_CHAR:
-            //Pobieramy znak do alfabetu
             tmpPosition = skipUntilWhiteCharOr(';','\n');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
 
@@ -205,7 +173,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case AXIOM_KEYWORD:
-            //Sprawdzamy czy aktualnie jest wprowadzany axiom
             tmpPosition = skipUntilWhiteCharOr(':','\n');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.compare("axiom") == 0 ) {
@@ -215,7 +182,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case AXIOM_COLON:
-            //Upewniamy sie ze jest dwukropek
             if( scriptString_->at(position_) == ':' ) {
                 position_++;
                 state_ = AXIOM_STRING;
@@ -223,7 +189,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case AXIOM_STRING:
-            //Pobieramy ciag poczatkowy LSystemu
             tmpPosition = skipUntilWhiteCharOr(';','\n');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.length() == 0 ) {
@@ -252,7 +217,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case RULES_KEYWORD:
-            //Sprawdzamy czy sa aktualnie wprowadzane reguły
             tmpPosition = skipUntilWhiteCharOr(':','\n');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.compare("rules") == 0 ) {
@@ -262,7 +226,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case RULES_COLON:
-            //Upewniamy sie ze jest dwukropek
             if( scriptString_->at(position_) == ':' ) {
                 position_++;
                 state_ = RULES_CHAR;
@@ -270,7 +233,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case RULES_CHAR:
-            //Szukamy znaku reguły.
             ruleSet = false;
             tmpPosition = skipUntilWhiteCharOr('=','\n');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
@@ -294,7 +256,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                 }
             }
             else {
-                //Nie podano poprawnego znaku
                 if( tmpString.length() == 0 ) reportError("Przed znakiem równości musi wystąpić znak reguły.");
                 else {
                     stringstream ss;
@@ -305,7 +266,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case RULES_EQUAL:
-            //Upewniamy sie ze jest rownosc
             if( scriptString_->at(position_) == '=' ) {
                 position_++;
                 state_ = RULES_STRING;
@@ -313,7 +273,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case RULES_STRING:
-            //Pobieramy ciag ktory przyporzadkujemy znakowi reguły.
             tmpPosition = skipUntilWhiteCharOr(',',';');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.length() > 0 ){
@@ -351,7 +310,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case DEFINE_KEYWORD:
-            //Sprawdzamy czy sa aktualnie wprowadzane definicje
             tmpPosition = skipUntilWhiteCharOr(':','\n');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.compare("define") == 0 ) {
@@ -361,7 +319,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case DEFINE_COLON:
-            //Upewniamy sie ze jest dwukropek
             if( scriptString_->at(position_) == ':' ) {
                 position_++;
                 state_ = DEFINE_CHAR;
@@ -369,7 +326,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case DEFINE_CHAR:
-            //Przypisujemy definicję do danego znaku
             defineParams.clear();
             defineCmd = NULL;
             tmpPosition = skipUntilWhiteCharOr('=','\n');
@@ -395,7 +351,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                 }
             }
             else {
-                //Nie podano poprawnego znaku
                 if( tmpString.length() == 0 ) reportError("Przed znakiem równości musi wystąpić znak definicji.");
                 else {
                     stringstream ss;
@@ -406,7 +361,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case DEFINE_EQUAL:
-            //Upewniamy się że jest rowność
             if( scriptString_->at(position_) == '=' ) {
                 position_++;
                 state_ = DEFINE_COMMAND;
@@ -414,7 +368,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case DEFINE_COMMAND:
-            //Pobieramy ciąg który mówi o typie komendy.
             tmpPosition = skipUntilWhiteCharOr(',',';');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.length() > 0 ){
@@ -424,18 +377,16 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                     if( it->name.compare(tmpString) == 0 ) break;
                 }
                 if( it != commands_.end()) {
-                    //Komenda została znaleziona.
                     defineCmd = &*it;
                     position_ = tmpPosition;
                     state_ = DEFINE_PARAM;
                 } else {
-                    //Komenda nie została znaleziona.
                     stringstream ss;
                     ss << "Komenda '" << tmpString << "' nie istnieje na liście dozwolonych komend.";
                     reportError(ss.str());
                 }
             } else {
-                //Sprawdzamy czy możemy zakończyć od razu komendę (dla komend bezparametrowych)
+                //Sprawdzamy czy możemy zakończyć od razu komendę (dla komend bezparametrowych).
                 if( defineCmd != NULL ) {
                     state_ = DEFINE_PARAM;
                 } else reportError("Spodziewano się nazwy komendy.");
@@ -443,13 +394,10 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case DEFINE_PARAM:
-            //Pobieramy parametry.
             tmpPosition = skipUntilWhiteCharOr(';',',');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.length() > 0 ) {
-                //Sprawdzamy czy nie przekroczyliśmy liczby argumentów.
                 if( defineParams.size() < defineCmd->args) {
-                    //Sprawdzamy czy jest liczbą zmiennoprzecinkową.
                     bool isFloat = true;
                     float arg;
                     try {
@@ -458,7 +406,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                         isFloat = false;
                     }
                     if( isFloat ) {
-                        //Dodajemy liczbę do listy argumentów.
                         defineParams.push_back(arg);
                         position_ = tmpPosition;
                     }
@@ -487,7 +434,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                         else state_ = DEFINE_CHAR;
                         position_++;
 
-                        //Dodajemy definicję do Lsystemu.
                         Command newCommand = *defineCmd;
                         newCommand.argv = defineParams;
                         lsystem_->addDefinition(defineChar, newCommand);
@@ -507,7 +453,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             break;
 
         case LSYSTEM_END:
-            //Sprawdzamy czy jest znak '}'
             if( scriptString_->at(position_) == '}' ) {
                 position_++;
                 state_ = LSYSTEM_NAME;
@@ -519,22 +464,17 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
         }
     }
 
-    //Usuwamy tymczasowy LSystem
+    //Usuwamy tymczasowy LSystem.
     if( !lsystemFinished ) {
 
-        //Sprawdzamy czy są już błędy, czy też należy poinformować o spodziewanym
-        //elemencie w definicji L-systemu.
         if(!errors_) {
 
-            //Korygujemy pozycję
             if( position_ >= scriptString_->length() ) {
                 position_ = scriptString_->length();
             }
 
-            //Ustawiamy pozycję.
             getErrorPosition();
 
-            //Podajemy jakiego elementu się spodziewaliśmy
             switch(state_) {
             case LSYSTEM_NAME:
                 parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się nazwy L-systemu."));
@@ -605,17 +545,13 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
         delete lsystem_;
     }
 
-    //Zwracamy czy byly jakies bledy
     return !errors_;
 }
 
-//Funkcja zwraca sparsowane L-systemy
 vector<shared_ptr<LSystem> > Parser::getLSystems() const { return lsystems_; }
 
-//Funkcja zwraca błędy, które wystąpiły
 const vector< ParseError >& Parser::getErrors() const { return parseErrors_; }
 
-//Funkcja rejestrująca dostępne komendy dla wszystkich modeli.
 void Parser::registerCommands() {
     commands_ = LSystemModelInterface::getCommands();
 }

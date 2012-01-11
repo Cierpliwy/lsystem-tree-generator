@@ -4,38 +4,26 @@
 QT += core \
     gui \
     opengl
-
 TARGET = LSystemTreeGenerator
-
 TEMPLATE = app
-
 SOURCES += src/Parser.cpp \
     src/MainWindow.cpp \
     src/Main.cpp \
     src/LSystem.cpp \
     src/ScriptEditor.cpp \
     src/LSystemModelInterface.cpp \
-    src/LSystemTextModel.cpp \
     src/ErrorListModel.cpp \
     src/GLWidget.cpp \
     src/Drawable.cpp \
     src/LSystemGLModel.cpp
-
 HEADERS += src/Parser.h \
     src/MainWindow.h \
     src/LSystem.h \
     src/ScriptEditor.h \
     src/LSystemModelInterface.h \
-    src/LSystemTextModel.h \
     src/ErrorListModel.h \
     src/GLWidget.h \
     src/Drawable.h \
     src/LSystemGLModel.h
-
 OTHER_FILES += README
-
 INCLUDEPATH += "D:/studia/ZPR/boost/boost_1_48_0"
-
-
-
-

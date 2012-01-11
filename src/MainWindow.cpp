@@ -17,158 +17,124 @@
 #include "GLWidget.h"
 #include "LSystemGLModel.h"
 
-#define MAX_REC 6
-
 using namespace std;
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-    //Ustawiamy tytuł okna.
     setWindowTitle(QString::fromUtf8("Generator drzew 3D według L-systemów"));
 
-    //Tworzymy edytor
-    editor = new ScriptEditor(this);
-    editorHighlighter = new LSystemScriptHighlighter(editor->document());
-    editorStatusBar = new QLabel;
+    editor_ = new ScriptEditor(this);
+    editorHighlighter_ = new LSystemScriptHighlighter(editor_->document());
+    editorStatusBar_ = new QLabel;
     editorCursorChanged();
 
-    //Tworzymy listę błędów.
-    errorTreeView = new QTreeView;
-    errorListModel = new ErrorListModel;
-    errorTreeView->setModel(errorListModel);
-    errorTreeView->setRootIsDecorated(false);
+    errorTreeView_ = new QTreeView;
+    errorListModel_ = new ErrorListModel;
+    errorTreeView_->setModel(errorListModel_);
+    errorTreeView_->setRootIsDecorated(false);
 
-    //Tworzymy okno do renderowania w OpenGL, jego kontener i layout dla kontenera.
-    glWidget = new GLWidget;
+    glWidget_ = new GLWidget;
     QGroupBox *glBox = new QGroupBox(QString::fromUtf8("Podgląd L-systemu"));
     QVBoxLayout *glLayout = new QVBoxLayout;
-    glLayout->addWidget(glWidget);
+    glLayout->addWidget(glWidget_);
     glBox->setLayout(glLayout);
     glModel_ = new LSystemGLModel;
 
-    //Główny layout okna.
     QHBoxLayout *mainLayout = new QHBoxLayout;
-    //Lewy panel okna
     QVBoxLayout *leftPanelLayout = new QVBoxLayout;
 
-    //Główny kontener edytora z tytułem.
     QGroupBox *editorBox = new QGroupBox("Edytor skryptu");
 
-    //Layout dla kontrolki przetrzymującej edytor.
     QVBoxLayout *editorBoxLayout = new QVBoxLayout;
-    editorBoxLayout->addWidget(editor);
-    editorBoxLayout->addWidget(editorStatusBar);
+    editorBoxLayout->addWidget(editor_);
+    editorBoxLayout->addWidget(editorStatusBar_);
     editorBox->setLayout(editorBoxLayout);
 
-    //Dodajemy edytor
     leftPanelLayout->addWidget(editorBox,4);
 
-    //Dodajemy przycisk parsowania
-    parseButton = new QPushButton("Parsuj...");
-    leftPanelLayout->addWidget(parseButton,1);
+    parseButton_ = new QPushButton("Parsuj...");
+    leftPanelLayout->addWidget(parseButton_,1);
 
-    //Dodajemy przyciski wczytywania i zapisywania
-    loadButton = new QPushButton("Wczytaj skrypt");
-    saveButton = new QPushButton("Zapisz skrypt");
+    loadButton_ = new QPushButton("Wczytaj skrypt");
+    saveButton_ = new QPushButton("Zapisz skrypt");
     QHBoxLayout *buttonsLayout = new QHBoxLayout;
-    buttonsLayout->addWidget(loadButton);
-    buttonsLayout->addWidget(saveButton);
+    buttonsLayout->addWidget(loadButton_);
+    buttonsLayout->addWidget(saveButton_);
     leftPanelLayout->addLayout(buttonsLayout);
 
-    //Dodajemy listę błędów.
-    leftPanelLayout->addWidget(errorTreeView);
+    leftPanelLayout->addWidget(errorTreeView_);
 
-    //Dodajemy lewy panel do głównego layoutu.
     mainLayout->addLayout(leftPanelLayout,0);
-    //Dodajemy okno.
+
     mainLayout->addWidget(glBox,1);
 
-    //Ustawiamy główny układ
     setLayout(mainLayout);
 
-    //Tworzymy parsera.
-    parser = &Parser::getInstance();
-    //Ustawiamy domyślne komendy i rejestrujemy je w parserze.
+    parser_ = &Parser::getInstance();
     LSystemModelInterface::addCommand(Command("move",1));
     LSystemModelInterface::addCommand(Command("draw", 1));
     LSystemModelInterface::addCommand(Command("rotate",3));
     LSystemModelInterface::addCommand(Command("push",0));
     LSystemModelInterface::addCommand(Command("pop",0));
-    parser->registerCommands();
+    parser_->registerCommands();
 
-    //Łączymy sygnał klinicięcia przycisku Parsuj z rzeczywistym parsowaniem.
-    connect(parseButton, SIGNAL(clicked()), this, SLOT(parse()));
-    //Zmiana pozycji kursora powoduje zmianę wartości etykiety.
-    connect(editor, SIGNAL(cursorPositionChanged()), this, SLOT(editorCursorChanged()));
-    //Kliknięcie na jeden z błędów na liście błędów powinienen przenieść kursor w miejsce błędu.
-    connect(errorTreeView, SIGNAL(clicked(QModelIndex)), this, SLOT(moveCursorToError(QModelIndex)));
-    //Kliknięcie prawym przyciskiem myszy pokazuje dokładny opis błędu.
-    connect(errorTreeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showDetailedError(QModelIndex)));
-    //Wczytywanie skryptu.
-    connect(loadButton, SIGNAL(clicked()), this, SLOT(loadScript()));
-    //Zapisanie skryptu.
-    connect(saveButton, SIGNAL(clicked()), this, SLOT(saveScript()));
+    connect(parseButton_, SIGNAL(clicked()), this, SLOT(parseScript()));
+    connect(editor_, SIGNAL(cursorPositionChanged()), this, SLOT(editorCursorChanged()));
+    connect(errorTreeView_, SIGNAL(clicked(QModelIndex)), this, SLOT(moveCursorToError(QModelIndex)));
+    connect(errorTreeView_, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(showDetailedError(QModelIndex)));
+    connect(loadButton_, SIGNAL(clicked()), this, SLOT(loadScript()));
+    connect(saveButton_, SIGNAL(clicked()), this, SLOT(saveScript()));
 }
 
 MainWindow::~MainWindow() {
-    delete editorHighlighter;
+    delete editorHighlighter_;
     delete glModel_;
 }
 
-//Parsujemy zawartość okna
-void MainWindow::parse() {
+void MainWindow::parseScript() {
 
-    //Pobieramy tekst
-    string scriptString = editor->document()->toPlainText().toStdString();
+    string scriptString = editor_->document()->toPlainText().toStdString();
 
-    //Parsujemy skrypt
-    if(parser->parseLSystem(scriptString)) {
-        errorListModel->removeParseErrors();
-        editor->cleanAllHighlights();
-        glModel_->process(*(parser->getLSystems().front()),MAX_REC);
-        glWidget->setDrawable(glModel_);
-        glWidget->repaint();
+    if(parser_->parseLSystem(scriptString)) {
+        errorListModel_->removeParseErrors();
+        editor_->cleanAllHighlights();
+        glModel_->process(*(parser_->getLSystems().front()),5);
+        glWidget_->setDrawable(glModel_);
+        glWidget_->repaint();
+
     } else {
-        errorListModel->setParseErrors(parser->getErrors());
-        editor->highlightBlocks(parser->getErrors());
+        errorListModel_->setParseErrors(parser_->getErrors());
+        editor_->highlightBlocks(parser_->getErrors());
     }
 }
 
-//Funkcja uaktualniająca pozycję kursora w edytorze.
 void MainWindow::editorCursorChanged() {
     stringstream ss;
-    ss << "Wiersz: " << editor->textCursor().blockNumber()+1 << ", Kolumna: " << editor->textCursor().positionInBlock();
-    editorStatusBar->setText(ss.str().c_str());
+    ss << "Wiersz: " << editor_->textCursor().blockNumber()+1 << ", Kolumna: " << editor_->textCursor().positionInBlock();
+    editorStatusBar_->setText(ss.str().c_str());
 }
 
-//Przenosimy kursor w miejsce błędu.
-void MainWindow::moveCursorToError(QModelIndex index)
-{
+void MainWindow::moveCursorToError(QModelIndex index) {
     if(!index.isValid()) return;
-    const ParseError& error = errorListModel->getParseError(index);
-    editor->moveCursorTo(error.row,error.column);
-    editor->setFocus();
+    const ParseError& error = errorListModel_->getParseError(index);
+    editor_->moveCursorTo(error.row,error.column);
+    editor_->setFocus();
 }
 
-//Pokazujemy cały błąd w oknie dialogowym.
-void MainWindow::showDetailedError(QModelIndex index)
-{
+void MainWindow::showDetailedError(QModelIndex index) {
     if(!index.isValid()) return;
-    const ParseError& error = errorListModel->getParseError(index);
+    const ParseError& error = errorListModel_->getParseError(index);
     QMessageBox msgBox;
     msgBox.setText(QString::fromUtf8(error.description.c_str()));
     msgBox.exec();
 }
 
-//Wczytujemy skrypt z pliku.
 void MainWindow::loadScript() {
 
-    //Czyścimy wszystkie błędy.
-    errorListModel->removeParseErrors();
-    editor->cleanAllHighlights();
+    errorListModel_->removeParseErrors();
+    editor_->cleanAllHighlights();
 
-    //Wyrzucamy okno z wyborem pliku.
     QString fileName = QFileDialog::getOpenFileName(
                         this,
                         QString::fromUtf8("Otwórz plik skryptu L-Systemów"),
@@ -183,23 +149,21 @@ void MainWindow::loadScript() {
             while(file.get(c)) {
                 script.append(c);
             }
-            editor->document()->setPlainText(QString::fromUtf8(script.toAscii()));
+            editor_->document()->setPlainText(QString::fromUtf8(script.toAscii()));
         }
         file.close();
     }
 }
 
-//Zapisujemy aktualny skrypt do pliku
 void MainWindow::saveScript() {
 
-    //Okno z wyborem pliku do zapisania
     QString fileName = QFileDialog::getSaveFileName(this,
                                                     QString::fromUtf8("Zapisz plik skryptu LSystemów"),
                                                     QString(),
                                                     QString::fromUtf8("Pliki skryptu LSystemów (*.lsys);;Wszystkie pliki (*)"));
     if( !fileName.isEmpty()) {
         ofstream file(fileName.toAscii());
-        QString script = editor->document()->toPlainText();
+        QString script = editor_->document()->toPlainText();
         QByteArray array = script.toUtf8();
         file.write(array.constData(),array.size());
         file.close();
