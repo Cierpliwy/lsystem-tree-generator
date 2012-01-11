@@ -99,7 +99,7 @@ void MainWindow::parseScript() {
     if(parser_->parseLSystem(scriptString)) {
         errorListModel_->removeParseErrors();
         editor_->cleanAllHighlights();
-        glModel_->process(*(parser_->getLSystems().front()),5);
+        glModel_->process(*(parser_->getLSystems().front()),10);
         glWidget_->setDrawable(glModel_);
         glWidget_->repaint();
 

@@ -44,7 +44,7 @@ int ScriptEditor::marginWidth() {
     return space;
 }
 
-void ScriptEditor::updateMarginWidth(int newBlocksCount) {
+void ScriptEditor::updateMarginWidth(int) {
     setViewportMargins(marginWidth(),0,0,0);
 }
 

@@ -35,7 +35,7 @@ public slots:
 
 private slots:
 
-    void updateMarginWidth(int newBlocksCount);
+    void updateMarginWidth(int);
     void updateMargin(const QRect& rect, int dy);
     void updateIndentationInfo();
 
