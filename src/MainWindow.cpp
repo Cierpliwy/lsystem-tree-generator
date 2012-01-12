@@ -252,54 +252,55 @@ void MainWindow::loadLSystemNameList(){
 }
 
 void MainWindow::loadView(){
-    if(!LSystemsListView_->selectionModel()->selectedIndexes().isEmpty())
-    {
-        QModelIndexList selectedLSystems = LSystemsListView_->selectionModel()->selectedIndexes();
-        QString selectedLSystemName = selectedLSystems.first().data().toString();
-        try{
-            QPalette palette = colorBeginSet_->palette();
-            QColor colorBegin = palette.color(QPalette::Background);
-            palette = colorEndSet_->palette();
-            QColor colorEnd = palette.color(QPalette::Background);
-            if(colorSet1_->isChecked()){
-                glModel_->setColorMode(LSystemGLModel::RECURCION_LEVEL_COLOR,
-                                       glm::vec3(colorBegin.redF(),
-                                                 colorBegin.greenF(),
-                                                 colorBegin.blueF()),
-                                       glm::vec3(colorEnd.redF(),
-                                                 colorEnd.greenF(),
-                                                 colorEnd.blueF()) );
-            }else if(colorSet2_->isChecked()){
-                glModel_->setColorMode(LSystemGLModel::SEQUENCE_COLOR,
-                                       glm::vec3(colorBegin.redF(),
-                                                 colorBegin.greenF(),
-                                                 colorBegin.blueF()),
-                                       glm::vec3(colorEnd.redF(),
-                                                 colorEnd.greenF(),
-                                                 colorEnd.blueF())  );
-            }
-            for( unsigned int i = 0; i < parser_->getLSystems().size(); ++i){
-
-                if(parser_->getLSystems()[i]->getName().c_str() == selectedLSystemName ){
-                    int current_recursion_depth = recursionDepthSet_->value();
-                    glModel_->process(*(parser_->getLSystems()[i]),current_recursion_depth);
-                    glm::vec3 center = glModel_->getCenterOfModel();
-                    float distance = glModel_->getDefaultDistanceFromModel();
-                    glWidget_->setLookAtPosition(center.x,center.y,center.z);
-                    glWidget_->setLookAtDistance(distance);
-                    glWidget_->setZoomDelta(distance/7.0f);
-                    glWidget_->setDrawable(glModel_);
-                    glWidget_->repaint();
+    if(LSystemsListView_->selectionModel() != NULL)
+        if(!LSystemsListView_->selectionModel()->selectedIndexes().isEmpty())
+        {
+            QModelIndexList selectedLSystems = LSystemsListView_->selectionModel()->selectedIndexes();
+            QString selectedLSystemName = selectedLSystems.first().data().toString();
+            try{
+                QPalette palette = colorBeginSet_->palette();
+                QColor colorBegin = palette.color(QPalette::Background);
+                palette = colorEndSet_->palette();
+                QColor colorEnd = palette.color(QPalette::Background);
+                if(colorSet1_->isChecked()){
+                    glModel_->setColorMode(LSystemGLModel::RECURCION_LEVEL_COLOR,
+                                           glm::vec3(colorBegin.redF(),
+                                                     colorBegin.greenF(),
+                                                     colorBegin.blueF()),
+                                           glm::vec3(colorEnd.redF(),
+                                                     colorEnd.greenF(),
+                                                     colorEnd.blueF()) );
+                }else if(colorSet2_->isChecked()){
+                    glModel_->setColorMode(LSystemGLModel::SEQUENCE_COLOR,
+                                           glm::vec3(colorBegin.redF(),
+                                                     colorBegin.greenF(),
+                                                     colorBegin.blueF()),
+                                           glm::vec3(colorEnd.redF(),
+                                                     colorEnd.greenF(),
+                                                     colorEnd.blueF())  );
                 }
+                for( unsigned int i = 0; i < parser_->getLSystems().size(); ++i){
+
+                    if(parser_->getLSystems()[i]->getName().c_str() == selectedLSystemName ){
+                        int current_recursion_depth = recursionDepthSet_->value();
+                        glModel_->process(*(parser_->getLSystems()[i]),current_recursion_depth);
+                        glm::vec3 center = glModel_->getCenterOfModel();
+                        float distance = glModel_->getDefaultDistanceFromModel();
+                        glWidget_->setLookAtPosition(center.x,center.y,center.z);
+                        glWidget_->setLookAtDistance(distance);
+                        glWidget_->setZoomDelta(distance/7.0f);
+                        glWidget_->setDrawable(glModel_);
+                        glWidget_->repaint();
+                    }
+                }
+
+                //this->showFullScreen();
+
             }
-
-            //this->showFullScreen();
-
+            catch(std::bad_alloc& e){
+                //TODOs
+            }
         }
-        catch(std::bad_alloc& e){
-            //TODOs
-        }
-    }
 }
 void MainWindow::chooseColorBegin(){
     QColorDialog *colorSetDialog = new QColorDialog;
