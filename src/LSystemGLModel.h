@@ -18,6 +18,12 @@ public:
     LSystemGLModel();
 
     void setColorMode(ColorMode mode, glm::vec3 start_color, glm::vec3 end_color);
+
+    int getNumberOfVertices() const { return numberOfVertices_; }
+
+    glm::vec3 getCenterOfModel();
+    float getDefaultDistanceFromModel();
+
     void process(LSystem& l, int recursion);
     void draw();
 
@@ -29,9 +35,12 @@ private:
     void push();
     void pop();
 
+    unsigned int displayList_;
+
     glm::mat4 rotationMatrix_;
     glm::mat4 translationMatrix_;
     glm::mat4 currentMatrix_;
+    std::stack<glm::mat4> matrixStack_;
 
     glm::vec4 point_;
     glm::vec4 finalPoint_;
@@ -39,12 +48,11 @@ private:
     glm::vec3 color_;
     glm::vec3 startColor_;
     glm::vec3 endColor_;
-
     ColorMode colorMode_;
 
-    std::stack<glm::mat4> matrixStack_;
+    glm::vec2 xLimits_, yLimits_, zLimits_;
+    unsigned int numberOfVertices_;
 
-    unsigned int displayList_;
 };
 
 #endif // LSYSTEMGLMODEL_H

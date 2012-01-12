@@ -29,6 +29,10 @@ void LSystemGLModel::process(LSystem &l, int recursion) {
     const std::vector<int>& recursion_depth_list = elements.second;
 
     currentMatrix_ = glm::mat4(1.0f);
+    numberOfVertices_ = 0;
+    xLimits_ = glm::vec2(0.0f);
+    yLimits_ = glm::vec2(0.0f);
+    zLimits_ = glm::vec2(0.0f);
 
     glNewList(displayList_, GL_COMPILE);
 
@@ -49,6 +53,7 @@ void LSystemGLModel::process(LSystem &l, int recursion) {
                      color_ = startColor_ + (endColor_ - startColor_)*((float)i/commands_list.size());
                  else
                      color_ = startColor_ + (endColor_ - startColor_)*((float)recursion_depth_list[i]/recursion);
+                 numberOfVertices_+=2;
                  draw(c.argv[0]);
 
              } else if(c.name.compare("rotate") == 0) {
@@ -65,6 +70,12 @@ void LSystemGLModel::process(LSystem &l, int recursion) {
     glEnd();
 
     glEndList();
+
+    std::cout << "Vertices: " << numberOfVertices_ << std::endl
+            << "X - max:" << xLimits_.x << " min:" << xLimits_.y << std::endl
+            << "Y - max:" << yLimits_.x << " min:" << yLimits_.y << std::endl
+            << "Z - max:" << zLimits_.x << " min:" << zLimits_.y << std::endl
+            << "Max distance: " << getDefaultDistanceFromModel() << std::endl;
 }
 
 void LSystemGLModel::move(float length) {
@@ -80,6 +91,15 @@ void LSystemGLModel::draw(float length) {
 
     glColor3f(color_.x,color_.y,color_.z);
     glVertex3f(finalPoint_.x, finalPoint_.y, finalPoint_.z);
+
+    xLimits_.x = glm::max(finalPoint_.x,xLimits_.x);
+    xLimits_.y = glm::min(finalPoint_.x,xLimits_.y);
+
+    yLimits_.x = glm::max(finalPoint_.y,yLimits_.x);
+    yLimits_.y = glm::min(finalPoint_.y,yLimits_.y);
+
+    zLimits_.x = glm::max(finalPoint_.z,zLimits_.x);
+    zLimits_.y = glm::min(finalPoint_.z,zLimits_.y);
 
     point_.y = length;
     finalPoint_ = currentMatrix_ * point_ ;
@@ -108,4 +128,33 @@ void LSystemGLModel::setColorMode(ColorMode mode, glm::vec3 start_color, glm::ve
     startColor_ = start_color;
     endColor_ = end_color;
     colorMode_ = mode;
+}
+
+glm::vec3 LSystemGLModel::getCenterOfModel() {
+    return glm::vec3((xLimits_.x+xLimits_.y)/2.0f,(yLimits_.x+yLimits_.y)/2.0f,(zLimits_.x+zLimits_.y)/2.0f);
+}
+
+float LSystemGLModel::getDefaultDistanceFromModel() {
+
+    float distance, maxDistance = 0;
+    glm::vec3 center = getCenterOfModel();
+
+    distance = glm::distance(glm::vec3(xLimits_.x,yLimits_.x,zLimits_.x), center);
+    maxDistance = glm::max(distance,maxDistance);
+    distance = glm::distance(glm::vec3(xLimits_.y,yLimits_.x,zLimits_.x), center);
+    maxDistance = glm::max(distance,maxDistance);
+    distance = glm::distance(glm::vec3(xLimits_.x,yLimits_.x,zLimits_.y), center);
+    maxDistance = glm::max(distance,maxDistance);
+    distance = glm::distance(glm::vec3(xLimits_.y,yLimits_.x,zLimits_.y), center);
+    maxDistance = glm::max(distance,maxDistance);
+    distance = glm::distance(glm::vec3(xLimits_.x,yLimits_.y,zLimits_.x), center);
+    maxDistance = glm::max(distance,maxDistance);
+    distance = glm::distance(glm::vec3(xLimits_.y,yLimits_.y,zLimits_.x), center);
+    maxDistance = glm::max(distance,maxDistance);
+    distance = glm::distance(glm::vec3(xLimits_.x,yLimits_.y,zLimits_.y), center);
+    maxDistance = glm::max(distance,maxDistance);
+    distance = glm::distance(glm::vec3(xLimits_.y,yLimits_.y,zLimits_.y), center);
+    maxDistance = glm::max(distance,maxDistance);
+
+    return 3*maxDistance;
 }

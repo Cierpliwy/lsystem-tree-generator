@@ -100,6 +100,11 @@ void MainWindow::parseScript() {
         errorListModel_->removeParseErrors();
         editor_->cleanAllHighlights();
         glModel_->process(*(parser_->getLSystems().front()),10);
+        glm::vec3 center = glModel_->getCenterOfModel();
+        float distance = glModel_->getDefaultDistanceFromModel();
+        glWidget_->setLookAtPosition(center.x,center.y,center.z);
+        glWidget_->setLookAtDistance(distance);
+        glWidget_->setZoomDelta(distance/7.0f);
         glWidget_->setDrawable(glModel_);
         glWidget_->repaint();
 

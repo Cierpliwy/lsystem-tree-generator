@@ -22,6 +22,11 @@ public:
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
 
+    void setCameraRotation(float x, float y, float z);
+    void setLookAtPosition(float x, float y, float z);
+    void setLookAtDistance(float distance);
+    void setZoomDelta(float delta);
+
 protected:
 
     void initializeGL();
@@ -39,8 +44,10 @@ private:
     //Przelicza biegunowe współrzędne punktu na radialne.
     void polarToCartesian();
 
+    float zoomDelta_;
     QPoint lastMousePosition_;
     QVector3D cameraPosition_;
+    QVector3D lookAtPosition_;
     QVector4D rotation_;
 };
 
