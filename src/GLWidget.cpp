@@ -3,6 +3,7 @@
 #include <ctime>
 #include <cmath>
 #include <iostream>
+#include <cfloat>
 
 #include "GLWidget.h"
 #include "Drawable.h"
@@ -53,7 +54,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event) {
         rotation_.setX(rotation_.x()-180.0*dy/width());
         rotation_.setY(rotation_.y()+180.0*dx/width());
 
-        if( rotation_.x() > 180.0 ) rotation_.setX(180.0);
+        if( rotation_.x() >= 180.0 ) rotation_.setX(179.999);
         if( rotation_.x() <= 0 ) rotation_.setX(0.001);
 
         polarToCartesian();
@@ -104,7 +105,7 @@ void GLWidget::resizeGL(int w, int h) {
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0,w/h,1,10000);
+    gluPerspective(45.0,w/h,1,FLT_MAX);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();

@@ -10,7 +10,7 @@ using std::map;
 
 LSystemGLModel::LSystemGLModel() {
     startColor_ = glm::vec3(0.4f,1.0f,0.2f);
-    endColor_ = glm::vec3(0.5f,2.0f,2.1f);
+    endColor_ = glm::vec3(0.5f,1.0f,1.0f);
     colorMode_ = SEQUENCE_COLOR;
 }
 
@@ -70,12 +70,6 @@ void LSystemGLModel::process(LSystem &l, int recursion) {
     glEnd();
 
     glEndList();
-
-    std::cout << "Vertices: " << numberOfVertices_ << std::endl
-            << "X - max:" << xLimits_.x << " min:" << xLimits_.y << std::endl
-            << "Y - max:" << yLimits_.x << " min:" << yLimits_.y << std::endl
-            << "Z - max:" << zLimits_.x << " min:" << zLimits_.y << std::endl
-            << "Max distance: " << getDefaultDistanceFromModel() << std::endl;
 }
 
 void LSystemGLModel::move(float length) {
@@ -120,8 +114,10 @@ void LSystemGLModel::push() {
 }
 
 void LSystemGLModel::pop() {
-    currentMatrix_ = matrixStack_.top();
-    matrixStack_.pop();
+    if(!matrixStack_.empty()){
+        currentMatrix_ = matrixStack_.top();
+        matrixStack_.pop();
+    }
 }
 
 void LSystemGLModel::setColorMode(ColorMode mode, glm::vec3 start_color, glm::vec3 end_color) {
