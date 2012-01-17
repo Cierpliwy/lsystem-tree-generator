@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QSpinBox>
 #include <QColorDialog>
+#include <QMessageBox>
 #include <sstream>
 #include <fstream>
 
@@ -170,14 +171,12 @@ void MainWindow::parseScript() {
     if(parser_->parseLSystem(scriptString)) {
         errorListModel_->removeParseErrors();
         editor_->cleanAllHighlights();
-        loadLSystemNameList();
-
-
 
     } else {
         errorListModel_->setParseErrors(parser_->getErrors());
         editor_->highlightBlocks(parser_->getErrors());
     }
+    loadLSystemNameList();
 }
 
 void MainWindow::editorCursorChanged() {
@@ -294,11 +293,15 @@ void MainWindow::loadView(){
                     }
                 }
 
-                //this->showFullScreen();
+
 
             }
             catch(std::bad_alloc& e){
-                //TODOs
+                QMessageBox *bad_alloc_message = new QMessageBox(QMessageBox::Critical,
+                                                                 QString::fromUtf8("Ostrzeżenie!"),
+                                                                 QString::fromUtf8("Zużyto za dużo pamięci.\nNależy zmniejszyć poziom rekurencji.")
+                                                                 );
+                bad_alloc_message->exec();
             }
         }
 }
