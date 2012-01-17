@@ -23,6 +23,7 @@
 #include "LSystemGLModel.h"
 
 #define DEFAULT_RECURSION_DEPTH 4
+#define MAX_RECURSION_DEPTH 15
 
 using namespace std;
 
@@ -98,7 +99,7 @@ MainWindow::MainWindow(QWidget *parent)
     recursionDepthSet_ = new QSpinBox;
     recursionDepthSet_->setValue(DEFAULT_RECURSION_DEPTH);
     recursionDepthSet_->setMinimum(0);
-    recursionDepthSet_->setMaximum(15);
+    recursionDepthSet_->setMaximum(MAX_RECURSION_DEPTH);
     recursionDepthSetLayout->addWidget(recursionDepthSetLabel);
     recursionDepthSetLayout->addWidget(recursionDepthSet_);
 
