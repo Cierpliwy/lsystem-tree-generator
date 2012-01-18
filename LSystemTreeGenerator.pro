@@ -25,6 +25,7 @@ HEADERS += src/Parser.h \
     src/GLWidget.h \
     src/Drawable.h \
     src/LSystemGLModel.h
-OTHER_FILES += README
-INCLUDEPATH += "D:/studia/ZPR/boost/boost_1_48_0" \
-               "D:/studia/ZPR/glm-0.9.3.0"
+OTHER_FILES += README \
+    test/demos.lsys
+INCLUDEPATH += "D:\Libs\boost_1_48_0" \
+               "D:\Libs\glm-0.9.3.0"

@@ -1,0 +1,117 @@
+2d_tree
+{
+	alphabet: 0 1 [ ] + -;
+	axiom: 0;
+	rules: 1 = 11, 0 = 1[-0]+0;
+	define: 	1 = draw 1, 0 = draw 0.5,
+				[ = push, ] = pop,
+				+ = rotate +45 0 0,
+				- = rotate -45 0 0;
+}
+
+2d_koch_curve
+{
+	alphabet: F + -;
+	axiom: F;
+	rules: F = F+F-F-F+F;
+	define: 	F = draw 1,
+				+ = rotate 90 0 0,
+				- = rotate -90 0 0;
+}
+
+2d_sierpinski_triangle
+{
+	alphabet: A B + -;
+	axiom: A;
+	rules: A = B-A-B, B = A+B+A;
+	define: 	A = draw 1,
+				B = draw 1,
+				+ = rotate 60 0 0,
+				- = rotate -60 0 0;
+}
+
+2d_dragon_curve
+{
+	alphabet: X Y F + -;
+	axiom: FX;
+	rules: X = X+YF, Y = FX-Y;
+	define: 	F = draw 10, 
+				+ = rotate 90 0 0, 
+				- = rotate -90 0 0;
+}
+
+2d_fractal_plant
+{
+	alphabet: X F + - [ ];
+   axiom: X;
+   rules: X = F-[[X]+X]+F[+FX]-X, 
+			 F = FF;
+	define: 	F = draw 1,
+				+ = rotate 25 0 0,
+				- = rotate -25 0 0,
+				[ = push,
+				] = pop;
+}
+
+2d_koch_island
+{
+	alphabet: F + -;
+	axiom: F+F+F+F;
+	rules: F = F+F-F-FF+F+F-F;
+	define: 	F = draw 1,
+				+ = rotate 90 0 0,
+				- = rotate -90 0 0;
+}
+
+3d_fractal_plant_1
+{
+	alphabet: X F + - [ ];
+   axiom: X;
+   rules: X = F-[[X]+X]+F[+FX]-X, 
+			 F = FF;
+	define: 	F = draw 1,
+				+ = rotate 25 45 -30,
+				- = rotate -25 23 23,
+				[ = push,
+				] = pop;
+}
+
+3d_fractal_plant_2
+{
+	alphabet: X F + - [ ];
+   axiom: X;
+   rules: X = F-[[X]+X]+F[+FX]-X, 
+			 F = FF;
+	define: 	F = draw 1,
+				+ = rotate -25 -5 -70,
+				- = rotate 25 40 23,
+				[ = push,
+				] = pop;
+}
+
+
+3d_wheat
+{
+	alphabet: X F + - [ ];
+   axiom: X;
+   rules: X = F-[[X]+X]+F[+FX]-X, 
+			 F = F-[F+]-F;
+	define: 	F = draw 1,
+				+ = rotate -5 45 -20,
+				- = rotate 25 -40 13,
+				[ = push,
+				] = pop;
+}
+
+3d_something
+{
+	alphabet: X F + - [ ];
+   axiom: X;
+   rules: X = F-[[X+F+X]+F-X+[+FX]-X, 
+			 F = F-F+X;
+	define: 	F = draw 1,
+				+ = rotate 90 80 -21,
+				- = rotate -71 -4 13,
+				[ = push,
+				] = pop;
+}

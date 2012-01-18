@@ -6,21 +6,38 @@
 
 = 1. Krótki opis projektu ====================================
 
-Zadaniem projektu jest wygenerowanie drzew 3D wg. L-systemu
-- zestawu reguł służącego do stworzenia graficznych tworów o
-fraktalnej budowie. Reguły te, w jaki sposób użytkownik
-będzie mógł opisać L-System ,są zdefiniowane przez autorski
-język skryptowy.
+Zadaniem programu jest wygenerowanie drzew 3D wg. L-systemu -
+zestawu reguł służącego do stworzenia graficznych tworów o
+fraktalnej budowie. Reguły, w jaki sposób użytkownik będzie
+mógł opisać L-System ,są zdefiniowane przez autorski język
+skryptowy. W tym celu zaimplementowano parser analizujący
+skrypt opisujący L-System, możliwości zapisu/odczytu tego
+skryptu do/z pliku oraz okno wyświetlania błędów parsowania.
+Program umożliwia wyświetlanie wybranego, sparsowanego
+L-Systemu w oknie za pomocą OpenGL, który renderuje dane
+drzewo 3D z opcjami wyświetlania różnych schematów
+kolorystycznych i różnych poziomów rekurencji.
 
 = 2. Kompilacja ==============================================
 
-Do skompilowania projektu wymagane jest biblioteka Qt możliwie
-w najnowszej wersji oraz biblioteka Boost, której nagłówki są
-wykorzystywane w projekcie.
+Do skompilowania projektu wymagane są:
+- Biblioteka Qt w możliwie najnowszej wersji (pisano na 4.7.4)
+  wraz z programem qmake: http://qt.nokia.com/downloads
 
-Uwaga: w środowisku Windows należy dodać ścieżkę do biblioteki
-Boost poprzez dodanie linii w pliku LSystemTreeGenerator.pro :
+- Biblioteka boost: http://www.boost.org/users/download/
 
-INCLUDEPATH += <twoja ścieżka>
+- Biblioteka glm: http://glm.g-truc.net/download.html
+
+Wszystkie biblioteki poza Qt są bibliotekami nagłówkowymi,
+należy je dodać tylko do swojej ścieżki INCLUDE_PATH w celu
+poprawnej kompilacji programu:
+
+INCLUDEPATH +=  <twoja ścieżka do boost> /
+                <twoja ścieżka do glm>
+
+Standardowa kompilacja: qmake && make
+
+W środowisku Windows polecam kompilację z poziomu Qt Creatora a
+nie linii komend.
 
 
