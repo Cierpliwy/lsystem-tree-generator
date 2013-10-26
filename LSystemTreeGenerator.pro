@@ -4,8 +4,11 @@
 QT += core \
     gui \
     opengl
+
 TARGET = LSystemTreeGenerator
+
 TEMPLATE = app
+
 SOURCES += src/Parser.cpp \
     src/MainWindow.cpp \
     src/Main.cpp \
@@ -16,6 +19,7 @@ SOURCES += src/Parser.cpp \
     src/GLWidget.cpp \
     src/Drawable.cpp \
     src/LSystemGLModel.cpp
+
 HEADERS += src/Parser.h \
     src/MainWindow.h \
     src/LSystem.h \
@@ -25,7 +29,8 @@ HEADERS += src/Parser.h \
     src/GLWidget.h \
     src/Drawable.h \
     src/LSystemGLModel.h
+
 OTHER_FILES += README \
     test/demos.lsys
-INCLUDEPATH += "D:\Libs\boost_1_48_0" \
-               "D:\Libs\glm-0.9.3.0"
+
+LIBS += -lGLU

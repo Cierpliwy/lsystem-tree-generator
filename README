@@ -1,43 +1,35 @@
 --------------------------------------------------------------
-|         GENEROWANIE DRZEW W 3D WEDŁUG LSYSTEMÓW            |
+|         L-SYSTEM BASED 3D TREE GENERATOR                   |
 |------------------------------------------------------------|
-|       autorzy: Przemysław Lenart i Zofia Abramowska        |
+|     authors: Przemysław Lenart and Zofia Abramowska        |
 --------------------------------------------------------------
+= 1. Short project description ===============================
 
-= 1. Krótki opis projektu ====================================
+This program was designed for generating 3D trees based on
+L-System language. More information about L-System can be
+found for example on wikipedia. Authors decided to create own
+very simple L-System scripting language for 3D visualization.
+Simple parser was designed and option for saving and loading
+script files. Program is able to display defined L-System
+object in single window using OpenGL, which renders it in full
+3D.
 
-Zadaniem programu jest wygenerowanie drzew 3D wg. L-systemu -
-zestawu reguł służącego do stworzenia graficznych tworów o
-fraktalnej budowie. Reguły, w jaki sposób użytkownik będzie
-mógł opisać L-System ,są zdefiniowane przez autorski język
-skryptowy. W tym celu zaimplementowano parser analizujący
-skrypt opisujący L-System, możliwości zapisu/odczytu tego
-skryptu do/z pliku oraz okno wyświetlania błędów parsowania.
-Program umożliwia wyświetlanie wybranego, sparsowanego
-L-Systemu w oknie za pomocą OpenGL, który renderuje dane
-drzewo 3D z opcjami wyświetlania różnych schematów
-kolorystycznych i różnych poziomów rekurencji.
+Sample L-System script file can be found in test directory.
 
-= 2. Kompilacja ==============================================
+Important note: IT WAS ACADEMIC PROJECT AND IT'S CODE QUALITY
+AND APPLAIED DESIGN IS FAR FROM ACCEPTABLE LEVEL.
 
-Do skompilowania projektu wymagane są:
-- Biblioteka Qt w możliwie najnowszej wersji (pisano na 4.7.4)
-  wraz z programem qmake: http://qt.nokia.com/downloads
+= 2. Compilation =============================================
 
-- Biblioteka boost: http://www.boost.org/users/download/
+Libraries required for a project are:
+- Qt4
+- Boost
+- glm
 
-- Biblioteka glm: http://glm.g-truc.net/download.html
+All libraries execept Qt are using headers only. Be sure that
+your settings in .pro file are set correctly:
 
-Wszystkie biblioteki poza Qt są bibliotekami nagłówkowymi,
-należy je dodać tylko do swojej ścieżki INCLUDE_PATH w celu
-poprawnej kompilacji programu:
+INCLUDEPATH +=  <your path to boost> /
+                <your path to glm>
 
-INCLUDEPATH +=  <twoja ścieżka do boost> /
-                <twoja ścieżka do glm>
-
-Standardowa kompilacja: qmake && make
-
-W środowisku Windows polecam kompilację z poziomu Qt Creatora a
-nie linii komend.
-
-
+Standard compilation: qmake && make

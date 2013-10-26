@@ -18,9 +18,9 @@ QVariant ErrorListModel::headerData(int section, Qt::Orientation orientation, in
 
     if( orientation == Qt::Horizontal && role == Qt::DisplayRole) {
         if( section == 0 )
-            return QString::fromUtf8("Nr Linii");
+            return trUtf8("Line number");
         else
-            return QString::fromUtf8("Opis błędu");
+            return trUtf8("Error description");
     }
     return QVariant();
 }

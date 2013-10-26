@@ -5,6 +5,11 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 
+/*
+ * Author note: PLEASE DON'T WRITE LEXERS AND PARSERS LIKE THAT!
+ *              It's wrong. It's ugly. Learn the good way!
+ */
+
 using namespace std;
 using namespace boost;
 
@@ -21,8 +26,6 @@ bool Parser::isLSystemName(const string& name) const {
     return true;
 }
 
-//Uwaga: position_ moze zostać ustawione poza zakresem
-//ciągu znaków. W takim wypadku funkcja zwraca false.
 bool Parser::ignoreWhiteChars() {
     for(; position_ < scriptString_->length(); ++position_)
         if(!isspace(scriptString_->at(position_))) break;
@@ -31,8 +34,6 @@ bool Parser::ignoreWhiteChars() {
     return true;
 }
 
-//Uwaga: Jeżeli na niczym się nie zatrzyma ustawi się na
-//pozycji za ostatnim znakiem!
 std::size_t Parser::skipUntilWhiteCharOr(char stop_char, char stop_char2) const {
     string::size_type i = position_;
     for(;i < scriptString_->length(); ++i)
@@ -40,8 +41,6 @@ std::size_t Parser::skipUntilWhiteCharOr(char stop_char, char stop_char2) const 
     return i;
 }
 
-//Uwaga: pozycja znaku może się znaleźć za końcem aktualnego
-//ciągu.
 void Parser::jumpToEndOfLSystem() {
     for(;position_ < scriptString_->length(); ++position_)
         if( scriptString_->at(position_) == '}') break;
@@ -84,7 +83,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
     parseErrors_.clear();
     lsystems_.clear();
 
-    //Dopóki pozycja nie przekroczy pliku parsujemy LSystemy
     while( ignoreWhiteChars() ) {
 
         switch(state_) {
@@ -102,7 +100,6 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
 
             if( isLSystemName(tmpString) && tmpString.length() > 0) {
 
-                //Sprawdzamy czy nazwa nie wystapila w zadnym z L-systemów.
                 vector<boost::shared_ptr<LSystem> >::const_iterator it = lsystems_.begin();
                 for(; it!=lsystems_.end(); ++it)
                     if( (*it)->getName().compare(tmpString) == 0 ) break;
@@ -113,12 +110,12 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                     lsystem_->setName(tmpString);
                 } else {
                     stringstream ss;
-                    ss << "W skrypcie występuje już L-system o nazwie: '" << tmpString << "'.";
+                    ss << "L-System called '" << tmpString << "' already exists in script file.";
                     reportError(ss.str());
                 }
             } else {
                 stringstream ss;
-                ss << "Nazwa '" << tmpString << "' LSystemu musi być alfanumeryczna i opcjonalnie zawierać znak '_'.";
+                ss << "L-System name '" << tmpString << "' must be alphanumeric and can optionally contain '_' character.";
                 reportError(ss.str());
             }
             break;
@@ -127,7 +124,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             if( scriptString_->at(position_) == '{' ) {
                 position_++;
                 state_ = ALPHABET_KEYWORD;
-            } else reportError("Po nazwie L-systemu musi się rozpocząć jego blok: '{'.");
+            } else reportError("After L-System name you have to start a block: '{' is missing.");
             break;
 
         case ALPHABET_KEYWORD:
@@ -136,14 +133,14 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             if( tmpString.compare("alphabet") == 0 ) {
                 position_ = tmpPosition;
                 state_ = ALPHABET_COLON;
-            } else reportError("Po otwarciu bloku musi wystąpić słowo kluczowe 'alphabet' i następujący po nim dwukropek.");
+            } else reportError("After a start of block 'alphabet' keyword and colon should be present.");
             break;
 
         case ALPHABET_COLON:
             if( scriptString_->at(position_) == ':' ) {
                 position_++;
                 state_ = ALPHABET_CHAR;
-            } else reportError("Po słowie kluczowym 'alphabet' musi wystąpić dwukropek.");
+            } else reportError("After 'alphabet keyword colon character should be present.");
             break;
 
         case ALPHABET_CHAR:
@@ -155,19 +152,19 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                 if( alphabet_.insert(tmpString.at(0)).second == false ) {
                     getErrorPosition();
                     stringstream ss;
-                    ss << "Ostrzeżenie: znak '" << tmpString.at(0) << "' występuje już w alfabecie.";
+                    ss << "Warning: '" << tmpString.at(0) << "' character already exists in an alphabet.";
                     parseErrors_.push_back(ParseError(errorRow_,errorColumn_,ss.str()));
                 }
                 position_ = tmpPosition;
             } else if ( tmpString.length() == 0 ) {
-                if( alphabet_.empty() ) reportError("Alfabet nie może być pusty");
+                if( alphabet_.empty() ) reportError("Alphabet cannot be empty.");
                 else {
                     position_++;
                     state_ = AXIOM_KEYWORD;
                 }
             } else {
                 stringstream ss;
-                ss << "Ciąg '" << tmpString << "' nie jest znakiem alfabetu.";
+                ss << "String '" << tmpString << "' is not an alphabet character.";
                 reportError(ss.str());
             }
             break;
@@ -178,21 +175,21 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             if( tmpString.compare("axiom") == 0 ) {
                 position_ = tmpPosition;
                 state_ = AXIOM_COLON;
-            } else reportError("Po zdefiniowaniu alfabetu musi wystąpić słowo kluczowe 'axiom' i następujący po nim dwukropek.");
+            } else reportError("After alphabet definition 'axiom' keyword and colon are expected.");
             break;
 
         case AXIOM_COLON:
             if( scriptString_->at(position_) == ':' ) {
                 position_++;
                 state_ = AXIOM_STRING;
-            } else reportError("Po słowie kluczowym 'axiom' musi wystąpić dwukropek.");
+            } else reportError("After 'axiom' keyword colon should be present.");
             break;
 
         case AXIOM_STRING:
             tmpPosition = skipUntilWhiteCharOr(';','\n');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.length() == 0 ) {
-                if( lsystem_->getAxiom().empty() ) reportError("LSystem nie może zawierać pustego ciągu początkowego.");
+                if( lsystem_->getAxiom().empty() ) reportError("LSystem cannot conatin empty start string.");
                 else {
                     const string& axiom = lsystem_->getAxiom();
                     string::size_type j = 0;
@@ -204,7 +201,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                         state_ = RULES_KEYWORD;
                     } else {
                         stringstream ss;
-                        ss << "Znak '" << axiom.at(j) << "' występujący w ciągu początkowym '" << axiom << "' nie należy do alfabetu.";
+                        ss << "'" << axiom.at(j) << "' character present in start string '" << axiom << "' is not included in an alphabet.";
                         reportError(ss.str());
                     }
                 }
@@ -212,7 +209,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                 if( lsystem_->getAxiom().empty() ) {
                     position_ = tmpPosition;
                     lsystem_->setAxiom(tmpString);
-                } else reportError("Istnieć może tylko jeden ciąg początkowy. Spacja nie może wliczać się do ciągu początkowego.");
+                } else reportError("Only one start string can exist. Space character cannot be part of it.");
             }
             break;
 
@@ -222,14 +219,14 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             if( tmpString.compare("rules") == 0 ) {
                 position_ = tmpPosition;
                 state_ = RULES_COLON;
-            } else reportError("Po zdefinowaniu ciągu początkowego musi wystąpić słowo kluczowe 'rules' i następujący po nim dwukropek.");
+            } else reportError("After start string definition 'rules' keyword and colon are expected.");
             break;
 
         case RULES_COLON:
             if( scriptString_->at(position_) == ':' ) {
                 position_++;
                 state_ = RULES_CHAR;
-            } else reportError("Po słowie kluczowym 'rules' musi wystąpić dwukropek.");
+            } else reportError("After 'rules' keyword colon is expected.");
             break;
 
         case RULES_CHAR:
@@ -238,28 +235,26 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.length() == 1 ) {
                 if( lsystem_->getRuleMap().find(tmpString.at(0)) == lsystem_->getRuleMap().end() ) {
-                    //Sprawdzamy czy znak należy do alfabetu.
                     if( alphabet_.find(tmpString.at(0)) == alphabet_.end() ) {
                         stringstream ss;
-                        ss << "Znak reguły '" << tmpString.at(0) << "' nie występuje w alfabecie.";
+                        ss << "Rule character '" << tmpString.at(0) << "' is not included in an alphabet.";
                         reportError(ss.str());
                     } else {
-                        //Nie znaleziono takiego znaku w regułach wiec dodajemy
                         ruleChar = tmpString.at(0);
                         position_ = tmpPosition;
                         state_ = RULES_EQUAL;
                     }
                 } else {
                     stringstream ss;
-                    ss << "Reguła '" << tmpString.at(0) << "' została już zdefiniowana. Redefinicja reguł jest zabroniona.";
+                    ss << "Rule '" << tmpString.at(0) << "' has already been defined. Redefinition of rules is not allowed.";
                     reportError(ss.str());
                 }
             }
             else {
-                if( tmpString.length() == 0 ) reportError("Przed znakiem równości musi wystąpić znak reguły.");
+                if( tmpString.length() == 0 ) reportError("Before '=' character rule sign has to be present.");
                 else {
                     stringstream ss;
-                    ss << "Ciąg '" << tmpString << "' jest niepoprawnym znakiem reguły. Oczekiwano pojedyńczego znaku zdefiniowanego alfabetu.";
+                    ss << "Following string '" << tmpString << "' is not correct rule character. Single character defined in alphabet was expected.";
                     reportError(ss.str());
                 }
             }
@@ -269,7 +264,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             if( scriptString_->at(position_) == '=' ) {
                 position_++;
                 state_ = RULES_STRING;
-            } else reportError("Po znaku reguły musi wystąpić znak równości.");
+            } else reportError("After rule character '=' sign is expected.");
             break;
 
         case RULES_STRING:
@@ -287,13 +282,11 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                         ruleSet = true;
                     } else {
                         stringstream ss;
-                        ss << "W ciągu reguły '" << tmpString << "' występuje znak '" << tmpString.at(j) << "' który nie należy do alfabetu.";
+                        ss << "Rule string '" << tmpString << "' contains character '" << tmpString.at(j) << "' which is not included in an alphabet.";
                         reportError(ss.str());
                     }
-                } else reportError("Spodziewano się podania nowej reguły po znaku ',' bądź zakończenia ';'.");
+                } else reportError("New rule was expected after ',' character or end of it marked by ';' character.");
             } else {
-                //Musimy sprawdzic na jakim znaku zatrzymal sie parser. Mógł zatrzymać się na za plikiem
-                //wtedy sprawdzenia może zawiesić program.
                 if( tmpPosition >= scriptString_->length()) {
                     errors_ = true;
                 }
@@ -303,7 +296,7 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                         else state_ = RULES_CHAR;
                         position_++;
                     } else {
-                        reportError("Ciąg reguły nie został ustawiony");
+                        reportError("Rule string was not defined.");
                     }
                 }
             }
@@ -315,14 +308,14 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             if( tmpString.compare("define") == 0 ) {
                 position_ = tmpPosition;
                 state_ = DEFINE_COLON;
-            } else reportError("Po zdefinowaniu zasad musi wystąpić słowo kluczowe 'define' i następujący po nim dwukropek.");
+            } else reportError("After rules definition 'define' keyword and colon are expected.");
             break;
 
         case DEFINE_COLON:
             if( scriptString_->at(position_) == ':' ) {
                 position_++;
                 state_ = DEFINE_CHAR;
-            } else reportError("Po słowie kluczowym 'define' musi wystąpić dwukropek.");
+            } else reportError("After 'define' keyword colon should be present.");
             break;
 
         case DEFINE_CHAR:
@@ -332,13 +325,11 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.length() == 1) {
                 if( lsystem_->getDefinitionMap().find(tmpString.at(0)) == lsystem_->getDefinitionMap().end()) {
-                    //Sprawdzamy czy znak należy do alfabetu.
                     if( alphabet_.find(tmpString.at(0)) == alphabet_.end() ) {
                         stringstream ss;
-                        ss << "Znak definicji '" << tmpString.at(0) << "' nie występuje w alfabecie.";
+                        ss << "Definition character '" << tmpString.at(0) << "' is not included in an alphabet.";
                         reportError(ss.str());
                     } else {
-                        //Nie znaleziono takiego znaku w definicjach wiec dodajemy
                         defineChar = tmpString.at(0);
                         position_ = tmpPosition;
                         state_ = DEFINE_EQUAL;
@@ -346,15 +337,15 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                 }
                 else {
                     stringstream ss;
-                    ss << "Definicja '" << tmpString.at(0) << "' została już zdefiniowana. Redefinicja definicji jest zabroniona.";
+                    ss << "Defition '" << tmpString.at(0) << "' is already defined. Redefinition of definitions is not allowed.";
                     reportError(ss.str());
                 }
             }
             else {
-                if( tmpString.length() == 0 ) reportError("Przed znakiem równości musi wystąpić znak definicji.");
+                if( tmpString.length() == 0 ) reportError("Before '=' definition character should be present.");
                 else {
                     stringstream ss;
-                    ss << "Ciąg '" << tmpString << "' jest niepoprawnym znakiem definicji. Oczekiwano pojedyńczego znaku zdefiniowanego alfabetu.";
+                    ss << "String '" << tmpString << "' is not correct definition sign. Single character defined in alphabet was expected.";
                     reportError(ss.str());
                 }
             }
@@ -364,14 +355,13 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
             if( scriptString_->at(position_) == '=' ) {
                 position_++;
                 state_ = DEFINE_COMMAND;
-            } else reportError("Po znaku definicji musi wystąpić znak równości.");
+            } else reportError("After definition character '=' has to be present.");
             break;
 
         case DEFINE_COMMAND:
             tmpPosition = skipUntilWhiteCharOr(',',';');
             tmpString = scriptString_->substr(position_, tmpPosition-position_);
             if( tmpString.length() > 0 ){
-                //Sprawdzamy czy komenda istnieje.
                 vector<Command>::const_iterator it = commands_.begin();
                 for(; it != commands_.end(); ++it) {
                     if( it->name.compare(tmpString) == 0 ) break;
@@ -382,14 +372,13 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                     state_ = DEFINE_PARAM;
                 } else {
                     stringstream ss;
-                    ss << "Komenda '" << tmpString << "' nie istnieje na liście dozwolonych komend.";
+                    ss << "Command '" << tmpString << "' was not specified.";
                     reportError(ss.str());
                 }
             } else {
-                //Sprawdzamy czy możemy zakończyć od razu komendę (dla komend bezparametrowych).
                 if( defineCmd != NULL ) {
                     state_ = DEFINE_PARAM;
-                } else reportError("Spodziewano się nazwy komendy.");
+                } else reportError("Command name was expected.");
             }
             break;
 
@@ -411,24 +400,21 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                     }
                     else {
                         stringstream ss;
-                        ss << "'" << tmpString << " nie jest poprawną liczbą zmiennoprzecinkową.";
+                        ss << "'" << tmpString << " is not correct floating point number.";
                         reportError(ss.str());
                     }
                 }
                 else {
                     stringstream ss;
-                    ss << "Nie spodziewano się kolejnego argumentu w komendzie '" << defineCmd->name << "'. "
-                       << "Zakończ definicję ';' bądź podaj nową definicję po ','.";
+                    ss << "Next parameter in '" << defineCmd->name << "' command was not expected. "
+                       << "Finish definition by ';' or define new definition after ','.";
                     reportError(ss.str());
                 }
             } else {
-                //Musimy sprawdzic na jakim znaku zatrzymal sie parser. Mógł zatrzymać się na za plikiem
-                //wtedy sprawdzenia może zawiesić program.
                 if( tmpPosition >= scriptString_->length()) {
                     errors_ = true;
                 }
                 else {
-                    //Sprawdzamy czy definicja została utworzona.
                     if( defineCmd->args == defineParams.size()) {
                         if( scriptString_->at(tmpPosition) == ';' ) state_ = LSYSTEM_END;
                         else state_ = DEFINE_CHAR;
@@ -440,12 +426,12 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
 
                     } else {
                         stringstream ss;
-                        ss << "Podano złą liczbę argumentów dla komendy '" << defineCmd->name << "'. "
-                           << "Spodziewano się " << defineCmd->args;
+                        ss << "Wrong number of parameters was passed for '" << defineCmd->name << "' command. "
+                           << "Expected " << defineCmd->args;
                         if( defineCmd->args > 1)
-                            ss << " komend.";
+                            ss << " parameters.";
                         else
-                            ss << " komendy.";
+                            ss << " parameter.";
                         reportError(ss.str());
                     }
                 }
@@ -459,12 +445,11 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
                 shared_ptr<LSystem> pLSystem(lsystem_);
                 lsystems_.push_back(pLSystem);
                 lsystemFinished = true;
-            } else reportError("Po zdefiniowaniu wszystkich elementów L-systemu musi wystąpić zakończenie bloku: '}'.");
+            } else reportError("After definition of all L-System elements end of block '}' is expected.");
             break;
         }
     }
 
-    //Usuwamy tymczasowy LSystem.
     if( !lsystemFinished ) {
 
         if(!errors_) {
@@ -477,67 +462,67 @@ bool Parser::parseLSystem ( const std::string& script_string ) {
 
             switch(state_) {
             case LSYSTEM_NAME:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się nazwy L-systemu."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected L-system name."));
                 break;
             case LSYSTEM_START:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się rozpoczęcia bloku L-Systemu '{'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected start of L-System block '{'."));
                 break;
             case LSYSTEM_END:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się zakończenia bloku L-Systemu '}'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected end of L-System block '}'."));
                 break;
             case ALPHABET_KEYWORD:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się słowa kluczowego 'alphabet'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected 'alphabet' keyword."));
                 break;
             case ALPHABET_COLON:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się ':' po słowie kluczowym 'alphabet'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected ':' after 'alphabet' keyword."));
                 break;
             case ALPHABET_CHAR:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się znaku alfabetu lub ';'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected alphabet character or ';'."));
                 break;
             case AXIOM_KEYWORD:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się słowa kluczowego 'axiom'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected 'axiom' keyword."));
                 break;
             case AXIOM_COLON:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się ':' po słowie kluczowym 'axiom'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected ':' after 'axiom' keyword."));
                 break;
             case AXIOM_STRING:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się ciągu początkowego lub ';'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected start string or ';'."));
                 break;
             case RULES_KEYWORD:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się słowa kluczowego 'rules'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected 'rules' keyword."));
                 break;
             case RULES_COLON:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się ':' po słowie kluczowym 'rules'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected ':' after 'rules' keyword."));
                 break;
             case RULES_CHAR:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się znaku reguły."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected rule character."));
                 break;
             case RULES_EQUAL:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się równości '=' po znaku reguły."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected '=' after rule character."));
                 break;
             case RULES_STRING:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się ciągu reguły, następnej reguły ',', bądź zakończenia definicji reguł ';'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected rule string, next rule ',', or end of rule definition ';'."));
                 break;
             case DEFINE_KEYWORD:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się słowa kluczowego 'define'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected 'define' keyword."));
                 break;
             case DEFINE_COLON:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się ':' po słowie kluczowym 'define'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected ':' after 'define' keyword."));
                 break;
             case DEFINE_CHAR:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się znaku definicji."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected definition character."));
                 break;
             case DEFINE_EQUAL:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się równości '=' po znaku definicji."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected '=' after definition character."));
                 break;
             case DEFINE_COMMAND:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się nazwy komendy po znaku równości."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected command name after '=' character."));
                 break;
             case DEFINE_PARAM:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Spodziewano się parametru komendy, następnej definicji ',', bądź zakończenia definicji ';'."));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Expected command parameters, next definition after ',', or end of definition ';'."));
                 break;
             default:
-                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Nieznany błąd"));
+                parseErrors_.push_back(ParseError(errorRow_,errorColumn_,"Unknown error"));
             }
 
             errors_ = true;

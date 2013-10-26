@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include <cfloat>
+#include <GL/glu.h>
 
 #include "GLWidget.h"
 #include "Drawable.h"
@@ -105,7 +106,7 @@ void GLWidget::resizeGL(int w, int h) {
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0,w/h,1,FLT_MAX);
+    gluPerspective(45.0,static_cast<float>(w)/h,1,FLT_MAX);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -135,4 +136,3 @@ void GLWidget::setLookAtDistance(float distance) {
 void GLWidget::setZoomDelta(float delta) {
     zoomDelta_ = delta;
 }
-

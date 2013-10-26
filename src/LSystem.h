@@ -6,8 +6,11 @@
 #include <map>
 #include <utility>
 
-// Struktura opisująca komendę, którą można przypisać
-// do dowolnego znaku alfabetu L-Systemu.
+/**
+ * @brief The Command structure describes a command which
+ *        can be bound to any character of L-system
+ *        alphabet.
+ */
 struct Command{
 
     std::string name;
@@ -21,7 +24,9 @@ struct Command{
     }
 };
 
-// Klasa opisująca L-System.
+/**
+ * @brief The LSystem class
+ */
 class LSystem
 {
 
@@ -44,9 +49,7 @@ public:
     void addDefinition(char letter, const Command cmd) { definitions_[letter] = cmd;}
     const std::map<char, Command>& getDefinitionMap() const { return definitions_; }
 
-    //Zwraca maksymalną głębokość rekurencji LSystemu.
     int getRecDepth() const { return recursions_.size();}
-    //Generuje podanę rekurencję L-Systemu.
     const RecursionElement& generate(int recursion_depth);
 
 protected:

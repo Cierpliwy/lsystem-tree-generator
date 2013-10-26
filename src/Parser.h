@@ -9,7 +9,9 @@
 
 class LSystemModelInterface;
 
-//Opis błędu rzucanego przez Parser.
+/**
+ * @brief The ParseError struct decribes error thrown by a parser
+ */
 struct ParseError
 {
     ParseError(unsigned int new_row, unsigned int new_column, const std::string& new_description) :
@@ -20,7 +22,10 @@ struct ParseError
 
 typedef std::vector<boost::shared_ptr<LSystem> > LSystemVector;
 
-//Klasa odpowiedzialna za tworzenie obiektów LSystemów.
+/**
+ * @brief The Parser class creates L-System objects from L-System
+ *        script language.
+ */
 class Parser
 {
 public:
@@ -30,7 +35,6 @@ public:
     LSystemVector getLSystems() const;
     const std::vector<ParseError>& getErrors() const;
 
-    //Rejestruje definicje komend dla danego wszystkich modeli L-Systemu.
     void registerCommands();
 
 protected:
@@ -47,7 +51,6 @@ private:
 
     bool isLSystemName(const std::string& name) const;
 
-    // Zwraca fałsz gdy przekroczono ciąg znaków.
     bool ignoreWhiteChars();
     std::string::size_type skipUntilWhiteCharOr(char stop_char, char stop_char2) const;
 
@@ -56,7 +59,6 @@ private:
     void getErrorPosition();
     void reportError(const std::string &error_description);
   
-    // Stan parsera.
     enum State {
         LSYSTEM_NAME,
         LSYSTEM_START,

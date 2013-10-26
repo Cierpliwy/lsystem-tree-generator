@@ -1,8 +1,10 @@
 #ifndef DRAWABLE_H
 #define DRAWABLE_H
 
-// Interfejs po którym muszą dziedziczyć wszystkie obekty, które
-// chcą być wyświetlanie w oknie OpenGL.
+/**
+ * @brief A drawable interface which all objects who are displayed on
+ *        OpenGL window should inherit from.
+ */
 class Drawable
 {
 public:

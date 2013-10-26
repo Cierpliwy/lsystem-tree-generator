@@ -9,9 +9,11 @@
 
 class ScriptEditorMargin;
 
-// Klasa umożliwiająca prostą edycję skryptu L-systemów wraz
-// z numerowaniem linii oraz podświetlaniem linii zawierających
-// błąd parsowania.
+/**
+ * @brief The ScriptEditor class in a simple L-System script
+ *        text editor which have line numbers feature and auto
+ *        indentation.
+ */
 class ScriptEditor : public QPlainTextEdit {
 
     Q_OBJECT
@@ -43,14 +45,15 @@ private:
 
     ScriptEditorMargin *margin_;
 
-    // Informacje potrzebne do realizacji automatycznych wcięć.
     int tabLevel_, lastTabLevel_;
     bool afterLeftBrace_, lastAfterLeftBrace_;
     bool afterSpaceOnly_, lastAfterSpaceOnly_;
 };
 
-// Klasa, której zadaniem jest rysowanie lewego marginesu dla
-// edytora skryptów. Wyświetla aktualny numer wiersza.
+/**
+ * @brief The ScriptEditorMargin class is a widget responsible
+ *        for drawing current line number on left margin.
+ */
 class ScriptEditorMargin : public QWidget {
 public:
     ScriptEditorMargin(ScriptEditor *editor) : QWidget(editor) {
@@ -71,7 +74,10 @@ private:
     ScriptEditor *editor_;
 };
 
-//Klasa kolorująca składnię skryptu L-systemów.
+/**
+ * @brief The LSystemScriptHighlighter class highlights
+ *        L-System script syntax.
+ */
 class LSystemScriptHighlighter : public QSyntaxHighlighter {
 
     Q_OBJECT
@@ -84,7 +90,6 @@ protected:
 
 private:
 
-    //Funkcja sprawdza czy znak jest białym znakiem lub '{','}',',',';',':','='
     bool isIgnoredChar(QChar c);
 
     QTextCharFormat keywordFormat_;

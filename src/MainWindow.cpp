@@ -11,6 +11,7 @@
 #include <QSpinBox>
 #include <QColorDialog>
 #include <QMessageBox>
+#include <QSplitter>
 #include <sstream>
 #include <fstream>
 
@@ -30,7 +31,7 @@ using namespace std;
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
 {
-    setWindowTitle(QString::fromUtf8("Generator drzew 3D według L-systemów"));
+    setWindowTitle(trUtf8("L-System Based 3D Tree Generator"));
 
     editor_ = new ScriptEditor(this);
     editorHighlighter_ = new LSystemScriptHighlighter(editor_->document());
@@ -49,19 +50,19 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     glWidget_ = new GLWidget;
-    QGroupBox *glBox = new QGroupBox(QString::fromUtf8("Podgląd L-systemu"));
+    QGroupBox *glBox = new QGroupBox(trUtf8("L-System preview"));
     QVBoxLayout *glLayout = new QVBoxLayout;
     glLayout->addWidget(glWidget_);
     glBox->setLayout(glLayout);
     glModel_ = new LSystemGLModel;
 
-    QHBoxLayout *mainLayout = new QHBoxLayout;
+    QSplitter *mainLayout = new QSplitter;
     QVBoxLayout *leftPanelLayout = new QVBoxLayout;
     QVBoxLayout *rightPanelLayout = new QVBoxLayout;
 
-    QGroupBox *editorBox = new QGroupBox("Edytor skryptu");
-    QGroupBox *viewBox = new QGroupBox(QString::fromUtf8("Wyświetlanie:"));
-    QGroupBox *LSystemListBox = new QGroupBox(QString::fromUtf8("Lista L-Systemów:"));
+    QGroupBox *editorBox = new QGroupBox(trUtf8("Script editor"));
+    QGroupBox *viewBox = new QGroupBox(trUtf8("Displayed"));
+    QGroupBox *LSystemListBox = new QGroupBox(trUtf8("L-System list:"));
 
     QVBoxLayout *editorBoxLayout = new QVBoxLayout;
     editorBoxLayout->addWidget(editor_);
@@ -70,11 +71,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     leftPanelLayout->addWidget(editorBox,4);
 
-    parseButton_ = new QPushButton("Parsuj...");
+    parseButton_ = new QPushButton(trUtf8("Parse..."));
     leftPanelLayout->addWidget(parseButton_,1);
 
-    loadButton_ = new QPushButton("Wczytaj skrypt");
-    saveButton_ = new QPushButton("Zapisz skrypt");
+    loadButton_ = new QPushButton(trUtf8("Load script"));
+    saveButton_ = new QPushButton(trUtf8("Save script"));
     QHBoxLayout *buttonsLayout = new QHBoxLayout;
     buttonsLayout->addWidget(loadButton_);
     buttonsLayout->addWidget(saveButton_);
@@ -87,15 +88,15 @@ MainWindow::MainWindow(QWidget *parent)
     LSystemListBox->setLayout(LSystemListBoxLayout);
 
     rightPanelLayout->addWidget(LSystemListBox);
-    drawButton_ = new QPushButton(QString::fromUtf8("Wyświetl"));
-    colorSet1_ = new QRadioButton(QString::fromUtf8("Kolor według poziomu rekurencji"));
-    colorSet2_ = new QRadioButton(QString::fromUtf8("Kolor według kolejnych iteracji"));
+    drawButton_ = new QPushButton(trUtf8("Display"));
+    colorSet1_ = new QRadioButton(trUtf8("Color based on recursion level"));
+    colorSet2_ = new QRadioButton(trUtf8("Color based on iteration level"));
     colorSet2_->setChecked(true);
 
     QVBoxLayout *viewDisplayLayout = new QVBoxLayout;
 
     QHBoxLayout *recursionDepthSetLayout = new QHBoxLayout;
-    QLabel *recursionDepthSetLabel = new QLabel("Poziom rekurencji: ");
+    QLabel *recursionDepthSetLabel = new QLabel(trUtf8("Recusion level:"));
     recursionDepthSet_ = new QSpinBox;
     recursionDepthSet_->setValue(DEFAULT_RECURSION_DEPTH);
     recursionDepthSet_->setMinimum(0);
@@ -104,8 +105,8 @@ MainWindow::MainWindow(QWidget *parent)
     recursionDepthSetLayout->addWidget(recursionDepthSet_);
 
     QHBoxLayout *colorLabelsLayout = new QHBoxLayout;
-    QLabel *colorBeginSetLabel = new QLabel(QString::fromUtf8("Kolor początkowy:"));
-    QLabel *colorEndSetLabel = new QLabel(QString::fromUtf8("Kolor końcowy:"));
+    QLabel *colorBeginSetLabel = new QLabel(trUtf8("Start color:"));
+    QLabel *colorEndSetLabel = new QLabel(trUtf8("End color:"));
     colorLabelsLayout->addWidget(colorBeginSetLabel);
     colorLabelsLayout->addWidget(colorEndSetLabel);
 
@@ -114,7 +115,6 @@ MainWindow::MainWindow(QWidget *parent)
     colorBeginSet_->setAutoFillBackground(true);
     const QString styleSheet = QString("QPushButton {"
                                        "background-color: %1}").arg(QColor(102,255,51).name());
-    //colorBeginSet_->setStyleSheet("background-color: rgb(102,255,51)");
     colorBeginSet_->setStyleSheet(styleSheet);
     colorEndSet_ = new QPushButton;
     colorEndSet_->setAutoFillBackground(true);
@@ -133,13 +133,19 @@ MainWindow::MainWindow(QWidget *parent)
     viewBox->setLayout(viewDisplayLayout);
     rightPanelLayout->addWidget(viewBox);
 
-    mainLayout->addLayout(leftPanelLayout,3);
+    QWidget *leftWidget = new QWidget;
+    leftWidget->setLayout(leftPanelLayout);
+    mainLayout->addWidget(leftWidget);
 
-    mainLayout->addWidget(glBox,10);
+    mainLayout->addWidget(glBox);
 
-    mainLayout->addLayout(rightPanelLayout,2);
+    QWidget *rightLayout = new QWidget;
+    rightLayout->setLayout(rightPanelLayout);
+    mainLayout->addWidget(rightLayout);
 
-    setLayout(mainLayout);
+    QHBoxLayout *mainHLayout = new QHBoxLayout;
+    mainHLayout->addWidget(mainLayout);
+    setLayout(mainHLayout);
 
     parser_ = &Parser::getInstance();
     LSystemModelInterface::addCommand(Command("move",1));
@@ -182,7 +188,8 @@ void MainWindow::parseScript() {
 
 void MainWindow::editorCursorChanged() {
     stringstream ss;
-    ss << "Wiersz: " << editor_->textCursor().blockNumber()+1 << ", Kolumna: " << editor_->textCursor().positionInBlock();
+    ss << trUtf8("Line: ").toStdString()  << editor_->textCursor().blockNumber()+1
+       << trUtf8(", column: ").toStdString() << editor_->textCursor().positionInBlock();
     editorStatusBar_->setText(ss.str().c_str());
 }
 
@@ -208,9 +215,9 @@ void MainWindow::loadScript() {
 
     QString fileName = QFileDialog::getOpenFileName(
                         this,
-                        QString::fromUtf8("Otwórz plik skryptu L-Systemów"),
+                        trUtf8("Open L-System script file"),
                         QString(),
-                        QString::fromUtf8("Pliki skryptu LSystemów (*.lsys);;Wszystkie pliki (*)"));
+                        trUtf8("L-System script files (*.lsys);;All files (*)"));
 
     if (!fileName.isEmpty()) {
         ifstream file(fileName.toAscii());
@@ -229,9 +236,9 @@ void MainWindow::loadScript() {
 void MainWindow::saveScript() {
 
     QString fileName = QFileDialog::getSaveFileName(this,
-                                                    QString::fromUtf8("Zapisz plik skryptu LSystemów"),
+                                                    trUtf8("Save L-System script file"),
                                                     QString(),
-                                                    QString::fromUtf8("Pliki skryptu LSystemów (*.lsys);;Wszystkie pliki (*)"));
+                                                    trUtf8("L-System script files (*.lsys);;All files (*)"));
     if( !fileName.isEmpty()) {
         ofstream file(fileName.toAscii());
         QString script = editor_->document()->toPlainText();
@@ -299,8 +306,8 @@ void MainWindow::loadView(){
             }
             catch(std::bad_alloc& e){
                 QMessageBox *bad_alloc_message = new QMessageBox(QMessageBox::Critical,
-                                                                 QString::fromUtf8("Ostrzeżenie!"),
-                                                                 QString::fromUtf8("Zużyto za dużo pamięci.\nNależy zmniejszyć poziom rekurencji.")
+                                                                 trUtf8("Warning!"),
+                                                                 trUtf8("Too much memory has been used.\nTry to lower recursion level.")
                                                                  );
                 bad_alloc_message->exec();
             }

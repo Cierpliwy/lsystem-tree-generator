@@ -127,7 +127,6 @@ void ScriptEditor::updateIndentationInfo() {
     QString currentLine = textCursor().block().text();
     int currentPos = textCursor().positionInBlock();
 
-    // Srawdzamy poziom wcięć.
     tabLevel_ = 0;
     int i = 0;
     for(; i < currentLine.length(); ++i) {

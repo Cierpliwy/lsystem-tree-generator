@@ -7,8 +7,10 @@
 
 class Drawable;
 
-// Okno, które zapewnia akcelerację graficzną dotyczącą wyświetlania
-// trójwymiarowej grafiki.
+/**
+ * @brief OpenGL window which provides hardware accelerated 3D
+ *        visualization.
+ */
 class GLWidget : public QGLWidget
 {
     Q_OBJECT
@@ -41,7 +43,6 @@ protected:
 
 private:
 
-    //Przelicza biegunowe współrzędne punktu na radialne.
     void polarToCartesian();
 
     float zoomDelta_;

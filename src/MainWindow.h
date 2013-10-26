@@ -19,14 +19,13 @@ class LSystemGLModel;
 class QStringListModel;
 class QSpinBox;
 
-// Główne okno programu.
 class MainWindow : public QWidget
 {
     Q_OBJECT
     
 public:
     MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    virtual ~MainWindow();
 
 public slots:
 
@@ -50,8 +49,6 @@ protected:
 
 private:
 
-    //Kontrolki lewego panelu.
-
     QPushButton *parseButton_;
     QPushButton *loadButton_;
     QPushButton *saveButton_;
@@ -61,13 +58,11 @@ private:
     ErrorListModel* errorListModel_;
     QTreeView* errorTreeView_;
 
-    //Okno OpenGL
     GLWidget* glWidget_;
     LSystemGLModel *glModel_;
 
     Parser *parser_;
 
-    //Prawy panel
     QPushButton *drawButton_;
     QRadioButton *colorSet1_;
     QRadioButton *colorSet2_;
